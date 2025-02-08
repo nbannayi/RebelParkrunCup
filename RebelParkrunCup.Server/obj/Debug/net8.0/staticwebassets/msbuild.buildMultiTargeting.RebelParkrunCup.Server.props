@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/RebelParkrunCup.Server.props" />
+</Project>

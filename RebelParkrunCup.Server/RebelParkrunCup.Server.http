@@ -1,0 +1,6 @@
+@RebelParkrunCup.Server_HostAddress = http://localhost:5087
+
+GET {{RebelParkrunCup.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

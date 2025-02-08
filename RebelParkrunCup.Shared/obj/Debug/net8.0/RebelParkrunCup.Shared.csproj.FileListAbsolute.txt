@@ -1,0 +1,12 @@
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/bin/Debug/net8.0/RebelParkrunCup.Shared.deps.json
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/bin/Debug/net8.0/RebelParkrunCup.Shared.dll
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/bin/Debug/net8.0/RebelParkrunCup.Shared.pdb
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.GeneratedMSBuildEditorConfig.editorconfig
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.AssemblyInfoInputs.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.AssemblyInfo.cs
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.csproj.CoreCompileInputs.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.sourcelink.json
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.dll
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/refint/RebelParkrunCup.Shared.dll
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/RebelParkrunCup.Shared.pdb
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Shared/obj/Debug/net8.0/ref/RebelParkrunCup.Shared.dll

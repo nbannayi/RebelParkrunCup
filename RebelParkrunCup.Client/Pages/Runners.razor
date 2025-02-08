@@ -1,0 +1,50 @@
+@page "/runners"
+@inject HttpClient Http
+@using RebelParkrunCup.Shared
+
+<h3>Runners</h3>
+
+@if (runners == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table id="runnerTable" class="table">
+        <thead>
+        <tr>
+            <th>FirstName</th>
+            <th>LastName</th>
+            <th>Baseline</th>        
+        </tr>
+        </thead>
+        <tbody>
+            @foreach (var runner in runners)
+            {
+                <tr>
+                    <td>@runner.FirstName</td>
+                    <td>@runner.LastName</td>
+                    <td>@runner.BaselineTimeMins:@runner.BaselineTimeSecs</td>
+                </tr>            
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Runner> runners;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Fetch data from the API
+            runners = await Http.GetFromJsonAsync<List<Runner>>("api/runners");
+        }
+        catch (Exception ex)
+        {
+            // Handle any errors (e.g. API not reachable)
+            Console.WriteLine($"Error fetching runners: {ex.Message}");
+        }
+    }
+}
