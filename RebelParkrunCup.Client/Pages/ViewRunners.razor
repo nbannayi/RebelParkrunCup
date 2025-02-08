@@ -1,0 +1,67 @@
+@page "/view-runners"
+@inject HttpClient Http
+@using RebelParkrunCup.Shared
+
+<h3>Runners List</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Baseline Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var runner in runners)
+        {
+            <tr class="@(runner == selectedRunner ? "table-primary" : "")"
+                @onclick="() => SelectRunner(runner)">
+                <td>@runner.FirstName</td>
+                <td>@runner.LastName</td>
+                <td>@($"{runner.BaselineTimeMins}:{@runner.BaselineTimeSecs:D2}")</td>
+                <td>
+                    <button class="btn btn-danger" @onclick="() => DeleteRunner(runner.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (runners.Count == 0)
+{
+    <p>No runners found.</p>
+}
+
+@code {
+    private List<Runner> runners = new();
+    private Runner selectedRunner;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRunners();
+    }
+
+    private async Task LoadRunners()
+    {
+        runners = await Http.GetFromJsonAsync<List<Runner>>("api/runners") ?? new();
+    }
+
+    private void SelectRunner(Runner runner)
+    {
+        selectedRunner = runner;
+    }
+
+    private async Task DeleteRunner(int runnerId)
+    {
+        if (runnerId == 0) return;
+
+        var response = await Http.DeleteAsync($"api/runners/{runnerId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            runners.RemoveAll(r => r.Id == runnerId); // Remove from UI
+        }
+    }
+}

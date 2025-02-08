@@ -26,12 +26,16 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/Pages/AddRunners.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWRkUnVubmVycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/Pages/Runners.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUnVubmVycy5yYXpvcg==
+[/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/Pages/ViewRunners.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvVmlld1J1bm5lcnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/_Imports.razor]

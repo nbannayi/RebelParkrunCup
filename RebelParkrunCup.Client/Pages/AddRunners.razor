@@ -1,0 +1,68 @@
+@page "/add-runners"
+@inject HttpClient Http
+@using RebelParkrunCup.Shared
+
+<h3>Add Runners</h3>
+
+<EditForm Model="@newRunner" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="firstName">First Name:</label>
+        <InputText id="firstName" @bind-Value="newRunner.FirstName" />
+    </div>
+    
+    <div>
+        <label for="lastName">Last Name:</label>
+        <InputText id="lastName" @bind-Value="newRunner.LastName" />
+    </div>
+    
+    <div>
+        <label for="baselineTime">Baseline Time (mm:ss):</label>
+        <InputText id="baselineTime" @bind-Value="BaselineTimeString" />
+    </div>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(resultMessage))
+{
+    <p>@resultMessage</p>
+}
+
+@code {
+    private Runner newRunner = new Runner();
+    private string BaselineTimeString = "";  // Stores "mm:ss" input as a string
+    private string resultMessage = "";
+    private async Task HandleSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(BaselineTimeString))
+        {
+            var parts = BaselineTimeString.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[0], out int mins) && int.TryParse(parts[1], out int secs))
+            {
+                newRunner.BaselineTimeMins = mins;
+                newRunner.BaselineTimeSecs = secs;
+
+                // Send the new runner to the API
+                var response = await Http.PostAsJsonAsync("api/runners", newRunner);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    resultMessage = "Runner successfully added!";
+                    newRunner = new Runner();  // Reset form
+                    BaselineTimeString = "";  // Reset time field
+                }
+                else
+                {
+                    resultMessage = "Failed to save runner.";
+                }
+            }
+            else
+            {
+                resultMessage = "Invalid time format. Please enter in mm:ss format.";
+            }
+        }
+    }
+}
