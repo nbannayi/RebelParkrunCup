@@ -11,28 +11,23 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <p>
     <div>
         <label for="firstName">First Name:</label>
-        <input type="Text" class="form-control" id="firstName" @bind="newRunner.FirstName" @ref="firstNameInput" style="max-width: 300px; width: 100%;"/>
+        <input type="Text" class="form-control" id="firstName" @bind="newRunner.FirstName" @ref="firstNameInput" style="max-width: 300px; width: 80%;"/>
     </div>    
-    </p>
-
-    <p>
     <div>
         <label for="lastName">Last Name:</label>
         <input type="Text" class="form-control" id="lastName" @bind="newRunner.LastName" style="max-width: 300px; width: 100%;"/>    
     </div>
-    </p>
     
     <p>
     <div>
         <label for="baselineTime">Baseline Time (mm:ss):</label>
-        <input type="Text" class="form-control" id="baselineName" @bind="BaselineTimeString" style="max-width: 300px; width: 100%;"/>
+        <input type="Text" class="form-control" id="baselineName" @bind="BaselineTimeString" style="max-width: 300px; width: 100%;"/>        
     </div>
     </p>
     
-    <button type="submit">Save</button>
+    <p><button type="submit">Save</button></p>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(resultMessage))

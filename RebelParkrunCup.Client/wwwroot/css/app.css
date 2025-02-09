@@ -124,9 +124,12 @@ code {
 }
 
 .styled-table th, .styled-table td {
-    padding: 10px;
+    padding: 4px 8px; /* Reduce padding */
+    height: 30px; /* Decrease row height */
+    font-size: 15px; /* Optionally reduce font size */
+    width: 150px; /* Adjust as needed */
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    white-space: nowrap; /* Prevents text wrapping */
 }
 
 .styled-table tbody tr:nth-child(even) {
@@ -137,8 +140,31 @@ code {
     background-color: #d1e7fd;
 }
 
+.styled-table button {
+    padding: 2px 6px;  /* Reduce padding */
+    height: 26px;      /* Set a smaller height */
+    font-size: 14px;   /* Reduce font size */
+    line-height: 1;    /* Prevent extra spacing */
+}
+
 .styled-table-container {
     max-height: 400px;
     overflow-y: auto;
     border: 1px solid #ddd;
 }
+
+.time-input {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Small space between elements */
+}
+
+.time-box {
+    width: 40px;  /* Compact width for 2-digit numbers */
+    text-align: center;
+    padding: 2px;
+}
+
+.time-separator {
+    font-weight: bold;
+    font-size: 1.2em; /* Make the colon slightly larger */

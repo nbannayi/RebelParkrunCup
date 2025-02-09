@@ -7,8 +7,7 @@
 
 <h3>VIEW RUNNERS</h3>
 
-<p>Use this screen to view runners' names and current baseline times, runners can also be removed (edit is not 
-    currently supported.)</p>
+<p>Use this screen to view runners' names and current baseline times, runners can also be removed and amended</p>
 
 <div class="table-container">
     <table class="styled-table">
@@ -28,16 +27,38 @@
             {
                 <tr class="@(runner == selectedRunner ? "table-primary" : "")"
                     @onclick="() => SelectRunner(runner)">
-                    <td>@runner.FirstName</td>
-                    <td>@runner.LastName</td>
-                    <td>@($"{runner.BaselineTimeMins}:{@runner.BaselineTimeSecs:D2}")</td>
-                    <td>
-                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
-                        <button class="btn btn-primary text-white" @onclick="() => DeleteRunner(runner.Id)">Edit</button>
-                    </td>
+                    
+                    @if (runner.Id == editingRunner?.Id)
+                    {
+                        <!-- Editable Row -->
+                        <td><input @bind="editingRunner.FirstName" class="form-control" /></td>
+                        <td><input @bind="editingRunner.LastName" class="form-control" /></td>
+                        <td>
+                            <div class="time-input">
+                                <input type="number" @bind="editingRunner.BaselineTimeMins" class="form-control time-box" min="0" max="59" />
+                                <span class="time-separator">:</span>
+                                <input type="number" @bind="editingRunner.BaselineTimeSecs" class="form-control time-box" min="0" max="59" />
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-success" @onclick="SaveRunner">Save</button>
+                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <!-- Normal Row -->
+                        <td>@runner.FirstName</td>
+                        <td>@runner.LastName</td>
+                        <td>@($"{runner.BaselineTimeMins}:{runner.BaselineTimeSecs:D2}")</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" @onclick="() => EditRunner(runner)">Edit</button>
+                        </td>
+                    }
                 </tr>
             }
-        </tbody>
+        </tbody>        
     </table>
 </div>
 
@@ -50,7 +71,8 @@
 
 @code {
     private List<Runner> runners = new();
-    private Runner selectedRunner;
+    private Runner? selectedRunner;
+    private Runner? editingRunner;
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,10 +86,42 @@
         // By default order by first name vv
         runners = runners.OrderBy(r => r.FirstName).ToList();
     }
-
     private void SelectRunner(Runner runner)
     {
         selectedRunner = runner;
+    }
+
+    private void EditRunner(Runner runner)
+    {
+        editingRunner = new Runner
+        {
+            Id = runner.Id,
+            FirstName = runner.FirstName,
+            LastName = runner.LastName,
+            BaselineTimeMins = runner.BaselineTimeMins,
+            BaselineTimeSecs = runner.BaselineTimeSecs
+        };
+    }
+
+    private void SaveRunner()
+    {
+        if (editingRunner == null) return;
+
+        var runnerToUpdate = runners.FirstOrDefault(r => r.Id == editingRunner.Id);
+        if (runnerToUpdate != null)
+        {
+            runnerToUpdate.FirstName = editingRunner.FirstName;
+            runnerToUpdate.LastName = editingRunner.LastName;
+            runnerToUpdate.BaselineTimeMins = editingRunner.BaselineTimeMins;
+            runnerToUpdate.BaselineTimeSecs = editingRunner.BaselineTimeSecs;
+        }
+        
+        editingRunner = null; // Exit edit mode
+    }
+
+    private void CancelEdit()
+    {
+        editingRunner = null; // Exit edit mode
     }
 
     private async Task DeleteRunner(int runnerId)
