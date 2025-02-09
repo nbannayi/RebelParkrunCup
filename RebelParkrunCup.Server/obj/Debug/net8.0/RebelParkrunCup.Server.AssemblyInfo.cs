@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RebelParkrunCup.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+70f4dd21b1042bc04de1215bae192089cd5973cc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ae37a374ede449b4c695d7f7f1dc89259584e40")]
 [assembly: System.Reflection.AssemblyProductAttribute("RebelParkrunCup.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RebelParkrunCup.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

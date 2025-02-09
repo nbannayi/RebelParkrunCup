@@ -1,34 +1,47 @@
 @page "/view-runners"
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 @using RebelParkrunCup.Shared
 
-<h3>VIEW RUNNERS</h3>
-<p>Use this screen to view runners' names and current baseline times, runners can also be removed (edit is not currently supported.)</p>
+<PageTitle>Rebel parkrun Cup Manager - View Runners</PageTitle>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Baseline Time</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var runner in runners)
-        {
-            <tr class="@(runner == selectedRunner ? "table-primary" : "")"
-                @onclick="() => SelectRunner(runner)">
-                <td>@runner.FirstName</td>
-                <td>@runner.LastName</td>
-                <td>@($"{runner.BaselineTimeMins}:{@runner.BaselineTimeSecs:D2}")</td>
-                <td>
-                    <button class="btn btn-danger" @onclick="() => DeleteRunner(runner.Id)">Delete</button>
-                </td>
+<h3>VIEW RUNNERS</h3>
+
+<p>Use this screen to view runners' names and current baseline times, runners can also be removed (edit is not 
+    currently supported.)</p>
+
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortTable("FirstName"))">First Name 
+                    @if(sortColumn == "FirstName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("LastName"))">Last Name 
+                    @if(sortColumn == "LastName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("BaselineTime"))">Baseline Time
+                    @if(sortColumn == "BaselineTime") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var runner in runners)
+            {
+                <tr class="@(runner == selectedRunner ? "table-primary" : "")"
+                    @onclick="() => SelectRunner(runner)">
+                    <td>@runner.FirstName</td>
+                    <td>@runner.LastName</td>
+                    <td>@($"{runner.BaselineTimeMins}:{@runner.BaselineTimeSecs:D2}")</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
+                        <button class="btn btn-primary text-white" @onclick="() => DeleteRunner(runner.Id)">Edit</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<p><b>Total runners:</b> @runners.Count</p>
 
 @if (runners.Count == 0)
 {
@@ -47,6 +60,9 @@
     private async Task LoadRunners()
     {
         runners = await Http.GetFromJsonAsync<List<Runner>>("api/runners") ?? new();
+        
+        // By default order by first name vv
+        runners = runners.OrderBy(r => r.FirstName).ToList();
     }
 
     private void SelectRunner(Runner runner)
@@ -63,6 +79,46 @@
         if (response.IsSuccessStatusCode)
         {
             runners.RemoveAll(r => r.Id == runnerId); // Remove from UI
+        }
+    }
+
+    private async Task ConfirmDelete(int runnerId)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>(
+            "window.confirm", 
+            new object[] { "Are you sure you want to delete this runner?" });
+        
+        if (confirmed)
+        {
+            await DeleteRunner(runnerId);
+        }
+    }
+
+    private string sortColumn = "FirstName";
+    private bool ascending = true;
+    private void SortTable(string column)
+    {
+        if (sortColumn == column)
+        {
+            ascending = !ascending;
+        }
+        else
+        {
+            sortColumn = column;
+            ascending = true;
+        }
+
+        if (column == "BaselineTime")
+        {
+            runners = ascending
+                ? runners.OrderBy(r => (r.BaselineTimeMins,r.BaselineTimeSecs)).ToList()
+                : runners.OrderByDescending(r => (r.BaselineTimeMins,r.BaselineTimeSecs)).ToList();
+        }
+        else
+        {
+            runners = ascending
+                ? runners.OrderBy(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList()
+                : runners.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
         }
     }
 }
