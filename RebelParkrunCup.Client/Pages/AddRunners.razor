@@ -2,27 +2,30 @@
 @inject HttpClient Http
 @using RebelParkrunCup.Shared
 
-<h3>Add Runners</h3>
+<h3>ADD RUNNERS</h3>
+<p>Use this screen to add runners to the system, these will then immediately be reflected in the VIEW RUNNERS screen.</p>
 
 <EditForm Model="@newRunner" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
+    <p><div>
         <label for="firstName">First Name:</label>
         <InputText id="firstName" @bind-Value="newRunner.FirstName" />
     </div>
-    
+    </p>
+    <p>
     <div>
         <label for="lastName">Last Name:</label>
         <InputText id="lastName" @bind-Value="newRunner.LastName" />
     </div>
-    
+    </p>
+    <p>
     <div>
         <label for="baselineTime">Baseline Time (mm:ss):</label>
         <InputText id="baselineTime" @bind-Value="BaselineTimeString" />
     </div>
-
+    </p>
     <button type="submit">Submit</button>
 </EditForm>
 

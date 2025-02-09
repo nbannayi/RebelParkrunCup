@@ -13,6 +13,10 @@
       "PackagePath": "staticwebassets/RebelParkrunCup.Client.styles.css"
     },
     {
+      "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/banner.jpg",
+      "PackagePath": "staticwebassets/banner.jpg"
+    },
+    {
       "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/css/app.css",
       "PackagePath": "staticwebassets/css/app.css"
     },
@@ -29,12 +33,24 @@
       "PackagePath": "staticwebassets/favicon.png"
     },
     {
+      "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/favicon_2.png",
+      "PackagePath": "staticwebassets/favicon_2.png"
+    },
+    {
       "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/icon-192.png",
       "PackagePath": "staticwebassets/icon-192.png"
     },
     {
+      "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/icon-192_2.png",
+      "PackagePath": "staticwebassets/icon-192_2.png"
+    },
+    {
       "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/index.html",
       "PackagePath": "staticwebassets/index.html"
+    },
+    {
+      "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/rr2.png",
+      "PackagePath": "staticwebassets/rr2.png"
     },
     {
       "Id": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/sample-data/weather.json",

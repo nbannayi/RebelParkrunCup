@@ -1,10 +1,3 @@
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.csproj.AssemblyReference.cache
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.GeneratedMSBuildEditorConfig.editorconfig
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.AssemblyInfoInputs.cache
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.AssemblyInfo.cs
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.csproj.CoreCompileInputs.cache
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.MvcApplicationPartsAssemblyInfo.cache
-/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.sourcelink.json
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/wwwroot/_framework/blazor.boot.json
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/wwwroot/_framework/blazor.webassembly.js
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/wwwroot/_framework/dotnet.js
@@ -622,6 +615,13 @@
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/icudt_no_CJK.dat
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/RebelParkrunCup.Shared.dll
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/bin/Debug/net8.0/RebelParkrunCup.Shared.pdb
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.csproj.AssemblyReference.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.GeneratedMSBuildEditorConfig.editorconfig
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.AssemblyInfoInputs.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.AssemblyInfo.cs
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.csproj.CoreCompileInputs.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.MvcApplicationPartsAssemblyInfo.cache
+/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/RebelParkrunCup.Client.sourcelink.json
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/webcil/Microsoft.AspNetCore.Authorization.wasm
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/webcil/Microsoft.AspNetCore.Components.wasm
 /Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/webcil/Microsoft.AspNetCore.Components.Forms.wasm

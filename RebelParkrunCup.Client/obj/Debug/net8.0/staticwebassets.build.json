@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "sa7Tz5kgw5hiOJrnmTBX89yQxoG4yOSeTOPn8m7Jq8g=",
+  "Hash": "j8YpwayeQd7MPFQOErtSwq0i03vgCH9RJO2rhwkA4Qw=",
   "Source": "RebelParkrunCup.Client",
   "BasePath": "/",
   "Mode": "Root",
@@ -7883,6 +7883,25 @@
       "OriginalItemSpec": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/obj/Debug/net8.0/scopedcss/projectbundle/RebelParkrunCup.Client.bundle.scp.css"
     },
     {
+      "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/banner.jpg",
+      "SourceId": "RebelParkrunCup.Client",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "banner.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/banner.jpg"
+    },
+    {
       "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/css/app.css",
       "SourceId": "RebelParkrunCup.Client",
       "SourceType": "Discovered",
@@ -7940,6 +7959,25 @@
       "OriginalItemSpec": "wwwroot/css/bootstrap/bootstrap.min.css.map"
     },
     {
+      "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/favicon_2.png",
+      "SourceId": "RebelParkrunCup.Client",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "favicon_2.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/favicon_2.png"
+    },
+    {
       "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/favicon.png",
       "SourceId": "RebelParkrunCup.Client",
       "SourceType": "Discovered",
@@ -7957,6 +7995,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/favicon.png"
+    },
+    {
+      "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/icon-192_2.png",
+      "SourceId": "RebelParkrunCup.Client",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "icon-192_2.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/icon-192_2.png"
     },
     {
       "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/icon-192.png",
@@ -7995,6 +8052,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/index.html"
+    },
+    {
+      "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/rr2.png",
+      "SourceId": "RebelParkrunCup.Client",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "rr2.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/rr2.png"
     },
     {
       "Identity": "/Users/Nick/Projects/RebelParkrunCup/RebelParkrunCup.Client/wwwroot/sample-data/weather.json",
