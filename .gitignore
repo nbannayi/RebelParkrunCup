@@ -17,8 +17,8 @@ test-results/
 *.txt
 
 # Binaries
-bin/
-obj/
+**/bin/
+**/obj/
 *.dll
 *.exe
 *.pdb
