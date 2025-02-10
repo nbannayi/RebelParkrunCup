@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "RebelParkrunCup.Client",
   "resources": {
-    "hash": "sha256-XCdudzvAqetWCsytS1Zsa0uztLETrOHtsK1d51n+ftw=",
+    "hash": "sha256-d8lKTnnRZEhLgT4FVuZATUWY+2z97UedwQwsNY6Hsc8=",
     "jsModuleNative": {
       "dotnet.native.8.0.12.ucq72cw4zj.js": "sha256-B6DNRvFeCUi3jbx9uKpuj+hV9cN0KG4RdZj1FgBZwj8="
     },
@@ -208,12 +208,12 @@
       "mscorlib.wasm": "sha256-QoC5hTKpDNO6efLnEvYwV9OJBXvYRq8/1yGhNZKiNCw=",
       "netstandard.wasm": "sha256-JT2F4bYWJpaSGq+iD0ITLpWxsDhMUjhqje9RpBtTg7w=",
       "System.Private.CoreLib.wasm": "sha256-fvIPBcvgvsRuWrKi2LGQsLYvcKUSnyIuBUsE3LJu/0Y=",
-      "RebelParkrunCup.Shared.wasm": "sha256-mhKTWz3IEDV/1St0aJecWO9iq0X01PHDj5s8ucM7clc=",
-      "RebelParkrunCup.Client.wasm": "sha256-BA5Auy6JCC9E8JY/kglxjF9I8Vz5CY0yKcW5eKG19oY="
+      "RebelParkrunCup.Shared.wasm": "sha256-q1PKk2iF1mztrxzg/XI/yCEvkUOz5SNQmd7qCJIXlFo=",
+      "RebelParkrunCup.Client.wasm": "sha256-Tk0OmLB3pLu5zduWNJ2x9owQXL57wUV7o0T+mRK6YUQ="
     },
     "pdb": {
-      "RebelParkrunCup.Shared.pdb": "sha256-rdJrPLD0s/nFrvtTwLvwrjNUjXa3D4LDEortUykaY2w=",
-      "RebelParkrunCup.Client.pdb": "sha256-4GPsO0JlBaABvdC6UCMKkqz1X+VZcVvsRRpD9I7cZ7s="
+      "RebelParkrunCup.Shared.pdb": "sha256-OMoMIMneO12qolGB7i9Zapa9ZvWemY7V/CYTecpL+Xg=",
+      "RebelParkrunCup.Client.pdb": "sha256-qGT9t0GRpxe5xT1Pq6Jzeb9DIePXMwpQ0tAO/mpuyxI="
     }
   },
   "cacheBootResources": true,

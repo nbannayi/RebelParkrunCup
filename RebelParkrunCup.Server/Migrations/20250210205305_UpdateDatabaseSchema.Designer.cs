@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RebelParkrunCup.Server.Data;
 
@@ -10,9 +11,11 @@ using RebelParkrunCup.Server.Data;
 namespace RebelParkrunCup.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250210205305_UpdateDatabaseSchema")]
+    partial class UpdateDatabaseSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.1");
@@ -41,7 +44,7 @@ namespace RebelParkrunCup.Server.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("BaselineTimes", (string)null);
+                    b.ToTable("BaselineTimes");
                 });
 
             modelBuilder.Entity("RebelParkrunCup.Shared.Runner", b =>
@@ -60,7 +63,7 @@ namespace RebelParkrunCup.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Runners", (string)null);
+                    b.ToTable("Runners");
                 });
 
             modelBuilder.Entity("RebelParkrunCup.Shared.Tournament", b =>
@@ -84,7 +87,7 @@ namespace RebelParkrunCup.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tournaments", (string)null);
+                    b.ToTable("Tournaments");
                 });
 
             modelBuilder.Entity("RebelParkrunCup.Shared.BaselineTime", b =>

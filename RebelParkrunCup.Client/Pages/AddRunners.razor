@@ -5,7 +5,7 @@
 <PageTitle>Rebel parkrun Cup Manager - Add Runners</PageTitle>
 
 <h3>ADD RUNNERS</h3>
-<p>Use this screen to add runners to the system, these will then immediately be reflected in the VIEW RUNNERS screen.</p>
+<p>Use this screen to add runners to the system - once set up baseline times can be managed.</p>
 
 <EditForm Model="@newRunner" OnValidSubmit="HandleSubmit" OnInvalidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
@@ -19,14 +19,7 @@
         <label for="lastName">Last Name:</label>
         <input type="Text" class="form-control" id="lastName" @bind="newRunner.LastName" style="max-width: 300px; width: 100%;"/>    
     </div>
-    
-    <p>
-    <div>
-        <label for="baselineTime">Baseline Time (mm:ss):</label>
-        <input type="Text" class="form-control" id="baselineName" @bind="BaselineTimeString" style="max-width: 300px; width: 100%;"/>        
-    </div>
-    </p>
-    
+    <p />    
     <p><button type="submit">Save</button></p>
 </EditForm>
 
@@ -37,7 +30,6 @@
 
 @code {
     private Runner newRunner = new Runner();
-    private string BaselineTimeString = "";  // Stores "mm:ss" input as a string
     private string resultMessage = "";
     // Create a reference for the first text box (First Name)
     private ElementReference firstNameInput;
@@ -61,52 +53,21 @@
             return;
         }
 
-        // Remaining validation for baseline time vv
-        if (!string.IsNullOrWhiteSpace(BaselineTimeString))
-        {
-            var parts = BaselineTimeString.Split(':');
-            if (parts.Length == 2 && int.TryParse(parts[0], out int mins) && int.TryParse(parts[1], out int secs))
-            {
-                if (mins < 15 || mins > 59 || secs < 0 || secs > 59)
-                {
-                    resultMessage = "Invalid time entered, must be between 15:00 and 59:59.";
-                    await firstNameInput.FocusAsync();
-                    return;
-                }
-
-                newRunner.BaselineTimeMins = mins;
-                newRunner.BaselineTimeSecs = secs;
-
-                // Send the new runner to the API
-                var response = await Http.PostAsJsonAsync("api/runners", newRunner);
+        // Send the new runner to the API
+        var response = await Http.PostAsJsonAsync("api/runners", newRunner);
                 
-                if (response.IsSuccessStatusCode)
-                {
-                    resultMessage = "Runner successfully added.";
-                    newRunner = new Runner();  // Reset form
-                    BaselineTimeString = "";  // Reset time field
-                    await firstNameInput.FocusAsync();
-                    return;
-                }
-                else
-                {
-                    resultMessage = "Failed to save runner.";                    
-                    await firstNameInput.FocusAsync();
-                    return;
-                }
-            }
-            else
-            {
-                resultMessage = "Invalid time format. Please enter in mm:ss format.";                
-                await firstNameInput.FocusAsync();
-                return;
-            }
+        if (response.IsSuccessStatusCode)
+        {
+            resultMessage = "Runner successfully added.";
+            newRunner = new Runner();  // Reset form.            
+            await firstNameInput.FocusAsync();
+            return;
         }
         else
         {
-            resultMessage = "A baseline time must be supplied.";                
+            resultMessage = "Failed to save runner.";                    
             await firstNameInput.FocusAsync();
-            return;         
+            return;
         }
     }
 }

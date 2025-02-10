@@ -104,7 +104,6 @@ code {
 
 /* Make the container scrollable */
 .table-container {
-    max-height: calc(100vh - 200px); /* Adjust height as needed */
     overflow-y: auto;
     border: 1px solid #ddd;
     position: relative;

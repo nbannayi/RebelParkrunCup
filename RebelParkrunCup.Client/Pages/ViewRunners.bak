@@ -3,30 +3,13 @@
 @inject IJSRuntime JSRuntime
 @using RebelParkrunCup.Shared
 
-<PageTitle>Rebel parkrun Cup Manager - Runners</PageTitle>
+<PageTitle>Rebel parkrun Cup Manager - View Runners</PageTitle>
 
-<h3>RUNNERS</h3>
+<h3>VIEW RUNNERS</h3>
 
-<p>Use this screen to add, view and remove runners' names.</p>
+<p>Use this screen to view runners' names and current baseline times, runners can also be removed and amended</p>
 
-<EditForm Model="@newRunner" OnValidSubmit="HandleSubmit" OnInvalidSubmit="HandleSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <label for="firstName"><b>First Name:</b></label>
-    <input type="Text" class="form-control" id="firstName" @bind="newRunner.FirstName" @ref="firstNameInput" style="display: inline-block; width: auto; margin-right: 10px;"/>
-    <label for="lastName"><b>Last Name:</b></label>
-    <input type="Text" class="form-control" id="lastName" @bind="newRunner.LastName" style="display: inline-block; width: auto; margin-right: 10px;"/>    
-    <button type="submit" style="display: inline-block; width: auto;">Save</button>    
-</EditForm>
-
-@if (!string.IsNullOrEmpty(resultMessage))
-{
-    <p>@resultMessage</p>
-}
-
-<p/>
-
-<div class="table-container" style="max-height: calc(100vh - 270px)">
+<div class="table-container">
     <table class="styled-table">
         <thead>
             <tr>
@@ -34,6 +17,8 @@
                     @if(sortColumn == "FirstName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
                 <th @onclick="@(() => SortTable("LastName"))">Last Name 
                     @if(sortColumn == "LastName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("BaselineTime"))">Baseline Time
+                    @if(sortColumn == "BaselineTime") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
                 <th>Actions</th>
             </tr>
         </thead>
@@ -49,6 +34,13 @@
                         <td><input @bind="editingRunner.FirstName" class="form-control" /></td>
                         <td><input @bind="editingRunner.LastName" class="form-control" /></td>
                         <td>
+                            <div class="time-input">
+                                <input type="number" @bind="editingRunner.BaselineTimeMins" class="form-control time-box" min="0" max="59" />
+                                <span class="time-separator">:</span>
+                                <input type="number" @bind="editingRunner.BaselineTimeSecs" class="form-control time-box" min="0" max="59" />
+                            </div>
+                        </td>
+                        <td>
                             <button class="btn btn-success" @onclick="SaveRunner">Save</button>
                             <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
                         </td>
@@ -58,6 +50,7 @@
                         <!-- Normal Row -->
                         <td>@runner.FirstName</td>
                         <td>@runner.LastName</td>
+                        <td>@($"{runner.BaselineTimeMins}:{runner.BaselineTimeSecs:D2}")</td>
                         <td>
                             <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
                             <button class="btn btn-primary text-white" @onclick="() => EditRunner(runner)">Edit</button>
@@ -105,6 +98,8 @@
             Id = runner.Id,
             FirstName = runner.FirstName,
             LastName = runner.LastName,
+            BaselineTimeMins = runner.BaselineTimeMins,
+            BaselineTimeSecs = runner.BaselineTimeSecs
         };
     }
 
@@ -117,9 +112,11 @@
         {
             runnerToUpdate.FirstName = editingRunner.FirstName;
             runnerToUpdate.LastName = editingRunner.LastName;
+            runnerToUpdate.BaselineTimeMins = editingRunner.BaselineTimeMins;
+            runnerToUpdate.BaselineTimeSecs = editingRunner.BaselineTimeSecs;
         }
         
-        editingRunner = null; // Exit edit mode        
+        editingRunner = null; // Exit edit mode
     }
 
     private void CancelEdit()
@@ -165,54 +162,17 @@
             ascending = true;
         }
 
-        runners = ascending
-            ? runners.OrderBy(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList()
-            : runners.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
-    }
-
-    // Form submission logic for new runner.
-    private Runner newRunner = new Runner();
-    private string resultMessage = "";
-    // Create a reference for the first text box (First Name)
-    private ElementReference firstNameInput;
-    
-    private async Task HandleSubmit()
-    {                    
-        // Check a first and last name entered.
-        if (string.IsNullOrWhiteSpace(newRunner.FirstName) || string.IsNullOrWhiteSpace(newRunner.LastName))
+        if (column == "BaselineTime")
         {
-            resultMessage = "A first and last name must be supplied for a new runner.";
-            await firstNameInput.FocusAsync();
-            return;
-        }
-
-        // Enforce no duplicates.
-        var runners = await Http.GetFromJsonAsync<List<Runner>>("api/runners") ?? new();
-        if (runners.Any(r => r.FirstName == newRunner.FirstName && r.LastName == newRunner.LastName))
-        {
-            resultMessage = "Runner with this name already exists.";            
-            await firstNameInput.FocusAsync();
-            return;
-        }
-
-        // Send the new runner to the API
-        var response = await Http.PostAsJsonAsync("api/runners", newRunner);
-                
-        if (response.IsSuccessStatusCode)
-        {
-            resultMessage = "Runner successfully added.";
-            newRunner = new Runner();  // Reset form.            
-            await firstNameInput.FocusAsync();            
-            runners.Add(newRunner);
-            await LoadRunners();        
-            StateHasChanged(); // Force UI update
-            return;
+            runners = ascending
+                ? runners.OrderBy(r => (r.BaselineTimeMins,r.BaselineTimeSecs)).ToList()
+                : runners.OrderByDescending(r => (r.BaselineTimeMins,r.BaselineTimeSecs)).ToList();
         }
         else
         {
-            resultMessage = "Failed to save runner.";                    
-            await firstNameInput.FocusAsync();
-            return;
+            runners = ascending
+                ? runners.OrderBy(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList()
+                : runners.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
         }
     }
 }
