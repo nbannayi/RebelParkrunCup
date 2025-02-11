@@ -7,7 +7,7 @@
 
 <h3>RUNNERS</h3>
 
-<p>Use this screen to add, view and remove runners' names.</p>
+<p>Use this screen to add, view, edit and remove runners' names and parkrun id's.</p>
 
 <EditForm Model="@newRunner" OnValidSubmit="HandleSubmit" OnInvalidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
@@ -16,6 +16,8 @@
     <input type="Text" class="form-control" id="firstName" @bind="newRunner.FirstName" @ref="firstNameInput" style="display: inline-block; width: auto; margin-right: 10px;"/>
     <label for="lastName"><b>Last Name:</b></label>
     <input type="Text" class="form-control" id="lastName" @bind="newRunner.LastName" style="display: inline-block; width: auto; margin-right: 10px;"/>    
+    <label for="parkrunId"><b>parkrun Id:</b></label>
+    <input type="Text" class="form-control" id="parkrunId" @bind="newRunner.ParkrunID" style="display: inline-block; width: auto; margin-right: 10px;"/>    
     <button type="submit" style="display: inline-block; width: auto;">Save</button>    
 </EditForm>
 
@@ -34,6 +36,8 @@
                     @if(sortColumn == "FirstName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
                 <th @onclick="@(() => SortTable("LastName"))">Last Name 
                     @if(sortColumn == "LastName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("ParkrunID"))">parkrun Id 
+                    @if(sortColumn == "ParkrunID") { <span>@(ascending ? "↑" : "↓")</span> }</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -48,6 +52,7 @@
                         <!-- Editable Row -->
                         <td><input @bind="editingRunner.FirstName" class="form-control" /></td>
                         <td><input @bind="editingRunner.LastName" class="form-control" /></td>
+                        <td><input @bind="editingRunner.ParkrunID" class="form-control" /></td>
                         <td>
                             <button class="btn btn-success" @onclick="SaveRunner">Save</button>
                             <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
@@ -58,6 +63,7 @@
                         <!-- Normal Row -->
                         <td>@runner.FirstName</td>
                         <td>@runner.LastName</td>
+                        <td>@runner.ParkrunID</td>
                         <td>
                             <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
                             <button class="btn btn-primary text-white" @onclick="() => EditRunner(runner)">Edit</button>
@@ -105,10 +111,11 @@
             Id = runner.Id,
             FirstName = runner.FirstName,
             LastName = runner.LastName,
+            ParkrunID = runner.ParkrunID
         };
     }
 
-    private void SaveRunner()
+    private async Task SaveRunner()
     {
         if (editingRunner == null) return;
 
@@ -117,9 +124,12 @@
         {
             runnerToUpdate.FirstName = editingRunner.FirstName;
             runnerToUpdate.LastName = editingRunner.LastName;
+            runnerToUpdate.ParkrunID = editingRunner.ParkrunID;
         }
         
-        editingRunner = null; // Exit edit mode        
+        await Http.PutAsJsonAsync($"api/runners/{editingRunner.Id}", runnerToUpdate);
+
+        editingRunner = null; // Exit edit mode
     }
 
     private void CancelEdit()
@@ -179,12 +189,13 @@
     private async Task HandleSubmit()
     {                    
         // Check a first and last name entered.
-        if (string.IsNullOrWhiteSpace(newRunner.FirstName) || string.IsNullOrWhiteSpace(newRunner.LastName))
+        if (string.IsNullOrWhiteSpace(newRunner.FirstName) || string.IsNullOrWhiteSpace(newRunner.LastName) ||
+            string.IsNullOrWhiteSpace(newRunner.ParkrunID))
         {
-            resultMessage = "A first and last name must be supplied for a new runner.";
+            resultMessage = "A first and last name as well as a parkrun id must be supplied for a new runner.";
             await firstNameInput.FocusAsync();
             return;
-        }
+        }   
 
         // Enforce no duplicates.
         var runners = await Http.GetFromJsonAsync<List<Runner>>("api/runners") ?? new();

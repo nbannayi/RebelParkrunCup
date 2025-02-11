@@ -7,7 +7,7 @@ namespace RebelParkrunCup.Server.Data
     {
         public DbSet<Runner> Runners { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
-        public DbSet<BaselineTime> BaselineTimes { get; set; }
+        public DbSet<Competitor> Competitors { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
@@ -17,15 +17,15 @@ namespace RebelParkrunCup.Server.Data
             base.OnModelCreating(modelBuilder);
 
             // Configure relationships.
-            modelBuilder.Entity<BaselineTime>()
+            modelBuilder.Entity<Competitor>()
                 .HasOne(bt => bt.Runner)
-                .WithMany(r => r.BaselineTimes)
+                .WithMany(r => r.Competitors)
                 .HasForeignKey(bt => bt.RunnerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<BaselineTime>()
+            modelBuilder.Entity<Competitor>()
                 .HasOne(bt => bt.Tournament)
-                .WithMany(t => t.BaselineTimes)
+                .WithMany(t => t.Competitors)
                 .HasForeignKey(bt => bt.TournamentId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

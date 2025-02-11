@@ -56,5 +56,30 @@ namespace RebelParkrunCup.Server.Controllers
             // Return a 201 status code with the created runner (you could return just the ID too if desired)
             return CreatedAtAction(nameof(GetRunners), new { id = runner.Id }, runner);
         }
+
+        // PUT: api/runners/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutRunner(int id, Runner runner)
+        {
+            if (id != runner.Id)
+            {
+                return BadRequest("ID mismatch");
+            }
+
+            var existingRunner = await _context.Runners.FindAsync(id);
+            if (existingRunner == null)
+            {
+                return NotFound();
+            }
+
+            // Update fields
+            existingRunner.FirstName = runner.FirstName;
+            existingRunner.LastName = runner.LastName;
+            existingRunner.ParkrunID = runner.ParkrunID;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // Success, no content returned
+        }
     }
 }

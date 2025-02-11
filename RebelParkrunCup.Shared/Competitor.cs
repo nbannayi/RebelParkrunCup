@@ -1,6 +1,6 @@
 namespace RebelParkrunCup.Shared;
 
-public class BaselineTime
+public class Competitor
 {
     public int Id { get; set; }
 

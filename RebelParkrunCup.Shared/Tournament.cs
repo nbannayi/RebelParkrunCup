@@ -7,5 +7,5 @@ public class Tournament
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public bool InProgress { get; set; }
-    public List<BaselineTime> BaselineTimes { get; set; } = new();
+    public List<Competitor> Competitors { get; set; } = new();
 }

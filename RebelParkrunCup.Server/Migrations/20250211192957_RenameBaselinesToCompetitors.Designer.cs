@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RebelParkrunCup.Server.Data;
 
@@ -10,9 +11,11 @@ using RebelParkrunCup.Server.Data;
 namespace RebelParkrunCup.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250211192957_RenameBaselinesToCompetitors")]
+    partial class RenameBaselinesToCompetitors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.1");
@@ -57,9 +60,6 @@ namespace RebelParkrunCup.Server.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("ParkrunId")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
