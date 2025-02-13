@@ -58,8 +58,9 @@ namespace RebelParkrunCup.Server.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ParkrunId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ParkrunID")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -72,11 +73,11 @@ namespace RebelParkrunCup.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("InProgress")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()

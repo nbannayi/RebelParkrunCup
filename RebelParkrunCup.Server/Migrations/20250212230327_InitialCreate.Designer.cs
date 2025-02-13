@@ -11,8 +11,8 @@ using RebelParkrunCup.Server.Data;
 namespace RebelParkrunCup.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250211192957_RenameBaselinesToCompetitors")]
-    partial class RenameBaselinesToCompetitors
+    [Migration("20250212230327_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,6 +61,10 @@ namespace RebelParkrunCup.Server.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ParkrunID")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Runners");
@@ -72,11 +76,11 @@ namespace RebelParkrunCup.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("InProgress")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()

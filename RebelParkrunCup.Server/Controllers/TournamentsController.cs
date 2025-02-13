@@ -7,25 +7,25 @@ namespace RebelParkrunCup.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RunnersController : ControllerBase
+    public class TournamentsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
-        public RunnersController(ApplicationDbContext context)
+        public TournamentsController(ApplicationDbContext context)
         {
             _context = context;
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRunner(int id)
+        public async Task<IActionResult> DeleteTournament(int id)
         {
-            var runner = await _context.Runners.FindAsync(id);
-            if (runner == null)
+            var tournament = await _context.Tournaments.FindAsync(id);
+            if (tournament == null)
             {
                 return NotFound();
             }
 
-            _context.Runners.Remove(runner);
+            _context.Tournaments.Remove(tournament);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -33,49 +33,49 @@ namespace RebelParkrunCup.Server.Controllers
 
         // GET: api/runners
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Runner>>> GetRunners()
+        public async Task<ActionResult<IEnumerable<Tournament>>> GetTournaments()
         {
-            var runners = await _context.Runners.ToListAsync();
-            return Ok(runners);
+            var tournaments = await _context.Tournaments.ToListAsync();
+            return Ok(tournaments);
         }
 
         // POST: api/runners
         [HttpPost]
-        public async Task<ActionResult<Runner>> PostRunner(Runner runner)
+        public async Task<ActionResult<Tournament>> PostRunner(Tournament tournament)
         {
-            if (runner == null)
+            if (tournament == null)
             {
-                return BadRequest("Runner data is required");
+                return BadRequest("Tournament data is required");
             }
 
             // Optionally: Add validation for data here (like checking if the name is valid)
 
-            _context.Runners.Add(runner);
+            _context.Tournaments.Add(tournament);
             await _context.SaveChangesAsync();
 
             // Return a 201 status code with the created runner (you could return just the ID too if desired)
-            return CreatedAtAction(nameof(GetRunners), new { id = runner.Id }, runner);
+            return CreatedAtAction(nameof(GetTournaments), new { id = tournament.Id }, tournament);
         }
 
         // PUT: api/runners/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRunner(int id, Runner runner)
+        public async Task<IActionResult> PutTournament(int id, Tournament tournament)
         {
-            if (id != runner.Id)
+            if (id != tournament.Id)
             {
                 return BadRequest("ID mismatch");
             }
 
-            var existingRunner = await _context.Runners.FindAsync(id);
-            if (existingRunner == null)
+            var existingTournament = await _context.Tournaments.FindAsync(id);
+            if (existingTournament == null)
             {
                 return NotFound();
             }
 
             // Update fields
-            existingRunner.FirstName = runner.FirstName;
-            existingRunner.LastName = runner.LastName;
-            existingRunner.ParkrunID = runner.ParkrunID;
+            existingTournament.Name = tournament.Name;
+            existingTournament.StartDate = tournament.StartDate;
+            existingTournament.EndDate = tournament.EndDate;
 
             await _context.SaveChangesAsync();
 

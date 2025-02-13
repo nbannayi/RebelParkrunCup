@@ -1,0 +1,246 @@
+@page "/tournaments"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using RebelParkrunCup.Shared
+
+<PageTitle>Rebel parkrun Cup Manager - Tournaments</PageTitle>
+
+<h3>TOURNAMENTS</h3>
+
+<p>Use this screen to add, view and update parkrun Cup tournaments.</p>
+
+<EditForm Model="@newTournament" OnValidSubmit="HandleSubmit" OnInvalidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <!-- Name Input: Takes More Space -->
+        <div style="flex-grow: 2;">
+            <label for="name"><b>Name:</b></label>
+            <input type="text" class="form-control" id="name" @ref="nameInput" @bind="newTournament.Name" style="width: 100%;" />
+        </div>
+
+        <!-- Start Date -->
+        <div style="flex-grow: 1;">
+            <label for="startDate"><b>Start Date:</b></label>
+            <input type="date" class="form-control" id="startDate" @bind="newTournament.StartDate" style="width: 100%;" />
+        </div>
+
+        <!-- End Date -->
+        <div style="flex-grow: 1;">
+            <label for="endDate"><b>End Date:</b></label>
+            <input type="date" class="form-control" id="endDate" @bind="newTournament.EndDate" style="width: 100%;" />
+        </div>
+    </div>
+    <button type="submit" style="display: inline-block; width: auto;">Save</button>    
+</EditForm>
+
+@if (!string.IsNullOrEmpty(resultMessage))
+{
+    <p>@resultMessage</p>
+}
+
+<p/>
+
+<div class="table-container" style="max-height: calc(100vh - 270px)">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortTable("Name"))">Name 
+                    @if(sortColumn == "Name") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("StartDate"))">Start Date 
+                    @if(sortColumn == "StartDate") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("EndDate"))">End Date 
+                    @if(sortColumn == "EndDate") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th @onclick="@(() => SortTable("Active"))">Active 
+                    @if(sortColumn == "Active") { <span>@(ascending ? "↑" : "↓")</span> }</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tournament in tournaments)
+            {
+                <tr class="@(tournament == selectedTournament ? "table-primary" : "")"
+                    @onclick="() => SelectTournament(tournament)">
+                    
+                    @if (tournament.Id == editingTournament?.Id)
+                    {
+                        <!-- Editable Row -->
+                        <td><input @bind="editingTournament.Name" class="form-control" /></td>
+                        <td><input @bind="editingTournament.StartDate" class="form-control" type="date" /></td>
+                        <td><input @bind="editingTournament.EndDate" class="form-control" type="date" /></td>
+                        <td>
+                            <button class="btn btn-success" @onclick="SaveTournament">Save</button>
+                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <!-- Normal Row -->
+                        <td>@tournament.Name</td>
+                        <td>@tournament.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>@tournament.EndDate.ToString("dd/MM/yyyy")</td>
+                        <td>@tournament.Active</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(tournament.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" @onclick="() => EditTournament(tournament)">Edit</button>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>        
+    </table>
+</div>
+
+<p><b>Total tournaments:</b> @tournaments.Count</p>
+
+@if (tournaments.Count == 0)
+{
+    <p>No tournaments found.</p>
+}
+
+@code {
+    private List<Tournament> tournaments = new();
+    private Tournament? selectedTournament;
+    private Tournament? editingTournament;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTournaments();
+        newTournament.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
+        newTournament.EndDate = new DateTime(DateTime.Now.Year, 7, 31);
+    }
+
+    private async Task LoadTournaments()
+    {
+        tournaments = await Http.GetFromJsonAsync<List<Tournament>>("api/tournaments") ?? new();
+        
+        // By default order by name vv
+        tournaments = tournaments.OrderBy(t => t.Name).ToList();
+    }
+    private void SelectTournament(Tournament tournament)
+    {
+        selectedTournament = tournament;
+    }
+
+    private void EditTournament(Tournament tournament)
+    {
+        editingTournament = new Tournament
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            StartDate = tournament.StartDate,
+            EndDate = tournament.EndDate
+        };
+    }
+
+    private async Task SaveTournament()
+    {
+        if (editingTournament == null) return;
+
+        var tournamentToUpdate = tournaments.FirstOrDefault(t => t.Id == editingTournament.Id);
+        if (tournamentToUpdate != null)
+        {
+            tournamentToUpdate.Name = editingTournament.Name;
+            tournamentToUpdate.StartDate = editingTournament.StartDate;
+            tournamentToUpdate.EndDate = editingTournament.EndDate;
+        }
+        
+        await Http.PutAsJsonAsync($"api/tournaments/{editingTournament.Id}", tournamentToUpdate);
+
+        editingTournament = null; // Exit edit mode
+    }
+
+    private void CancelEdit()
+    {
+        editingTournament = null; // Exit edit mode
+    }
+
+    private async Task DeleteTournament(int tournamentId)
+    {
+        if (tournamentId == 0) return;
+
+        var response = await Http.DeleteAsync($"api/tournaments/{tournamentId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            tournaments.RemoveAll(t => t.Id == tournamentId); // Remove from UI
+        }
+    }
+
+    private async Task ConfirmDelete(int tournamentId)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>(
+            "window.confirm", 
+            new object[] { "Are you sure you want to delete this tournament?" });
+        
+        if (confirmed)
+        {
+            await DeleteTournament(tournamentId);
+        }
+    }
+
+    private string sortColumn = "Name";
+    private bool ascending = true;
+    private void SortTable(string column)
+    {
+        if (sortColumn == column)
+        {
+            ascending = !ascending;
+        }
+        else
+        {
+            sortColumn = column;
+            ascending = true;
+        }
+
+        tournaments = ascending
+            ? tournaments.OrderBy(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList()
+            : tournaments.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
+    }
+
+    // Form submission logic for new tournament.
+    private Tournament newTournament = new Tournament();
+    private string resultMessage = "";
+    // Create a reference for the first text box (Name)
+    private ElementReference nameInput;
+    
+    private async Task HandleSubmit()
+    {                    
+        // Check a first and last name entered.
+        if (string.IsNullOrWhiteSpace(newTournament.Name))
+        {
+            resultMessage = "A name, start date and end date must be supplied for a new tournament.";
+            await nameInput.FocusAsync();
+            return;
+        }
+
+        // Enforce no duplicates.
+        var tournaments = await Http.GetFromJsonAsync<List<Tournament>>("api/tournaments") ?? new();
+        if (tournaments.Any(t => t.Name == newTournament.Name))
+        {
+            resultMessage = "Tournament with this name already exists.";            
+            await nameInput.FocusAsync();
+            return;
+        }
+
+        // Send the new tournament to the API
+        var response = await Http.PostAsJsonAsync("api/tournaments", newTournament);
+                
+        if (response.IsSuccessStatusCode)
+        {
+            resultMessage = "Tournament successfully added.";
+            newTournament = new Tournament();  // Reset form.            
+            await nameInput.FocusAsync();            
+            tournaments.Add(newTournament);
+            await LoadTournaments();        
+            StateHasChanged(); // Force UI update
+            return;
+        }
+        else
+        {
+            resultMessage = "Failed to save tournament.";                    
+            await nameInput.FocusAsync();
+            return;
+        }
+    }
+}
