@@ -76,6 +76,7 @@ namespace RebelParkrunCup.Server.Controllers
             existingTournament.Name = tournament.Name;
             existingTournament.StartDate = tournament.StartDate;
             existingTournament.EndDate = tournament.EndDate;
+            existingTournament.Active = tournament.Active;
 
             await _context.SaveChangesAsync();
 
