@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using RebelParkrunCup.Server.Data;
 using RebelParkrunCup.Shared;
@@ -20,6 +21,7 @@ builder.Services.AddControllers();
 // Add SQLite database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=parkrun.db"));
+
 
 var app = builder.Build();
 

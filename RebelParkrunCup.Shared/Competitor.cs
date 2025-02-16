@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RebelParkrunCup.Shared;
 
 public class Competitor
@@ -6,10 +8,12 @@ public class Competitor
 
     // Foreign Key - Runner.
     public int RunnerId { get; set; }
+    
     public Runner Runner { get; set; } = null!;
 
     // Foreign Key - Tournament.
     public int TournamentId { get; set; }
+
     public Tournament Tournament { get; set; } = null!;
 
     // Time fields.

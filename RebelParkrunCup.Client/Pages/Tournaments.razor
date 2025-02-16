@@ -83,6 +83,7 @@
                         <td>
                             <button class="btn btn-danger" @onclick="() => ConfirmDelete(tournament.Id)">Delete</button>
                             <button class="btn btn-primary text-white" @onclick="() => EditTournament(tournament)">Edit</button>
+                            <button class="btn btn-primary text-white" @onclick="() => MakeActive(tournament)"> @(tournament.Active ? "Active" : "Make Active")</button>                            
                         </td>
                     }
                 </tr>
@@ -108,6 +109,15 @@
         await LoadTournaments();
         newTournament.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
         newTournament.EndDate = new DateTime(DateTime.Now.Year, 7, 31);
+    }
+
+    private async Task MakeActive(Tournament tournament)
+    {
+        foreach (var t in tournaments)
+        {
+            t.Active = (t == tournament); // Set true only for the clicked one, false for others
+            await Http.PutAsJsonAsync($"api/tournaments/{t.Id}", t);
+        }        
     }
 
     private async Task LoadTournaments()

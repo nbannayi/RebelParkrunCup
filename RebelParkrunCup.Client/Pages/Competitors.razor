@@ -1,0 +1,259 @@
+@page "/competitors"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using RebelParkrunCup.Shared
+
+<h3>COMPETITORS: @activeTournament.Name</h3>
+
+<p>Use this screen to add and remove runners to the currently active tournament using mouse drag select, SHIFT and CTRL keys.  
+    baseline times can then be set.</p>
+
+<div style="display: flex; height: 70vh; gap: 20px;">
+    <!-- Runner Selection (Left Panel) -->
+    <div style="flex: 1; display: flex; flex-direction: column; max-height: 70vh; overflow-y: auto;">
+        <select multiple style="flex: 1; width: 100%;" @onchange="OnRunnerSelectionChange">
+            @foreach (var runner in availableRunners)
+            {
+                <option value="@runner.Id">@runner.FirstName @runner.LastName</option>
+            }
+        </select>
+    </div>
+
+    <!-- Competitors Grid (Right Panel) -->
+    <div style="flex: 2; display: flex; flex-direction: column; max-height: 70vh; overflow-y: auto;">
+        <div style="flex: 1; overflow: auto;">
+            <table class="table styled-table">
+                <thead>
+                    <tr>
+                        <th @onclick="@(() => SortCompetitors("Name"))">Name
+                            @if (sortBy == "Name") { <span>@(isAscending ? "↑" : "↓")</span> }</th>
+                        <th @onclick="@(() => SortCompetitors("BaselineTimeMins"))">Baseline Time (mins)
+                            @if (sortBy == "BaselineTimeMins") { <span>@(isAscending ? "↑" : "↓")</span> }</th>
+                        <th @onclick="@(() => SortCompetitors("BaselineTimeSecs"))">Baseline Time (secs)
+                            @if (sortBy == "BaselineTimeSecs") { <span>@(isAscending ? "↑" : "↓")</span> }</th>                        
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var competitor in competitors)
+                    {
+                        <tr>
+                            <td>@competitor.RunnerFirstName @competitor.RunnerLastName</td>
+
+                            @if (competitor == editingCompetitor)
+                            {
+                                <!-- Editing Mode -->
+                                <td><input type="number" class="form-control" @bind="editingCompetitor.BaselineTimeMins" /></td>
+                                <td><input type="number" class="form-control" @bind="editingCompetitor.BaselineTimeSecs" /></td>
+                                <td>
+                                    <button class="btn btn-success btn-sm" @onclick="UpdateBaseline">Update</button>
+                                    <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                </td>
+                            }
+                            else
+                            {
+                                <!-- View Mode -->
+                                <td>@competitor.BaselineTimeMins</td>
+                                <td>@competitor.BaselineTimeSecs</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" @onclick="() => EditBaseline(competitor)">Set Baseline</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveCompetitor(competitor.Id)">Remove</button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<p/>
+<button class="btn btn-primary text-white" @onclick="AddRunners">Add Selected</button>
+<button class="btn btn-success" @onclick="SaveCompetitors">Save Changes</button>
+<b>@competitors.Count</b> of <b>@(competitors.Count + availableRunners.Count)</b> added to tournament.
+
+@code {
+    private List<TournamentDto> tournaments = new();
+    private List<Runner> availableRunners = new();
+    private List<Runner> allRunners = new();
+    private List<CompetitorDto> competitors = new();
+    private List<int> selectedRunnerIds = new();
+    private int? selectedTournamentId;
+    private TournamentDto activeTournament = new();
+    private int origBaselineTimeMins = 0;
+    private int origBaselineTimeSecs = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTournaments();
+
+        // Find the active tournament
+        activeTournament = tournaments.FirstOrDefault(t => t.Active);
+        if (activeTournament != null)
+        {
+            selectedTournamentId = activeTournament.Id;
+            await LoadCompetitors(); // Load competitors automatically
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnRunnerSelectionChange(ChangeEventArgs e)
+    {
+        var selectedValues = e.Value as string[]; // Capture the selected options
+        if (selectedValues != null)
+        {
+            selectedRunnerIds = selectedValues.Select(int.Parse).ToList(); // Update selection
+        }
+
+        StateHasChanged(); // Explicitly tell Blazor to refresh the UI
+    }
+
+    private async Task LoadTournaments()
+    {
+        // Fetch tournaments from API
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments");
+        Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
+    }
+
+    private async Task LoadCompetitors()
+    {        
+
+        if (activeTournament != null)
+        {
+            // Fetch competitors for the selected tournament
+            competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}");
+                            
+            // Load available runners (excluding those already in competitors)
+            allRunners = await Http.GetFromJsonAsync<List<Runner>>("api/runners");
+            availableRunners = allRunners.Where(r => !competitors.Any(c => c.RunnerId == r.Id)).ToList() ?? new List<Runner>();
+        }        
+    }
+
+    void AddRunners()
+    {
+        if (selectedRunnerIds.Any())
+        {
+            // Get the selected runners from available list
+            var selectedRunners = availableRunners
+                .Where(r => selectedRunnerIds.Contains(r.Id))
+                .ToList();
+
+            // Add the selected runners to competitors
+            foreach (var runner in selectedRunners)
+            {
+                competitors.Add(new CompetitorDto
+                {
+                    Id = competitors.Count + 1, // Simulate a new ID
+                    RunnerId = runner.Id,
+                    RunnerFirstName = runner.FirstName,
+                    RunnerLastName = runner.LastName,
+                    RunnerParkrunId = runner.ParkrunID,                    
+                    BaselineTimeMins = 0,
+                    BaselineTimeSecs = 0
+                });
+            }
+
+            // Remove the added runners from the available list
+            availableRunners = availableRunners
+                .Where(r => !selectedRunnerIds.Contains(r.Id))
+                .ToList();
+
+            SortAvailableRunners();
+
+            // Clear the selected runner IDs to reset the selection
+            selectedRunnerIds.Clear();
+
+            var temp = availableRunners;
+            availableRunners = new List<Runner>(); 
+            StateHasChanged(); 
+            availableRunners = temp; 
+            StateHasChanged(); // Trigger UI refresh again
+        }
+    }
+
+    void RemoveCompetitor(int competitorId)
+    {
+        // Find the competitor to remove
+        var competitorToRemove = competitors.FirstOrDefault(c => c.Id == competitorId);
+        if (competitorToRemove != null)
+        {
+            // Restore the runner to available list.
+            var runner = allRunners.FirstOrDefault(r => r.Id == competitorToRemove.RunnerId);
+            availableRunners = availableRunners.Append(runner).ToList(); // Reassign list
+            SortAvailableRunners();
+
+            // Remove competitor from the list
+            competitors = competitors.Where(c => c.Id != competitorId).ToList(); // Reassign list
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SaveCompetitors()
+    {
+        if (competitors.Count > 0)
+        {
+            await Http.PostAsJsonAsync("api/competitors", competitors);
+        }
+    }
+    private string sortBy = "Name"; // Default sort column
+    private bool isAscending = true; // Default sort order
+
+    private void SortCompetitors(string column)
+    {
+        if (sortBy == column)
+        {
+            isAscending = !isAscending; // Toggle the sort order
+        }
+        else
+        {
+            sortBy = column; // Set new column to sort by
+            isAscending = true; // Default to ascending when changing column
+        }
+
+        // Sort the competitors list based on the column and order
+        competitors = sortBy switch
+        {
+            "Name" => isAscending
+                ? competitors.OrderBy(c => c.RunnerFirstName).ThenBy(c => c.RunnerLastName).ToList()
+                : competitors.OrderByDescending(c => c.RunnerFirstName).ThenByDescending(c => c.RunnerLastName).ToList(),
+            "BaselineTimeMins" => isAscending
+                ? competitors.OrderBy(c => c.BaselineTimeMins).ToList()
+                : competitors.OrderByDescending(c => c.BaselineTimeMins).ToList(),
+            "BaselineTimeSecs" => isAscending
+                ? competitors.OrderBy(c => c.BaselineTimeSecs).ToList()
+                : competitors.OrderByDescending(c => c.BaselineTimeSecs).ToList(),
+            _ => competitors
+        };
+
+        StateHasChanged(); // Ensure the table is re-rendered
+    }
+
+    private void SortAvailableRunners()
+    {
+        availableRunners = availableRunners
+            .OrderBy(r => r.FirstName)
+            .ThenBy(r => r.LastName)
+            .ToList();
+    }
+
+    private CompetitorDto? editingCompetitor;
+
+    void EditBaseline(CompetitorDto competitor)
+    {
+        origBaselineTimeMins = competitor.BaselineTimeMins;
+        origBaselineTimeSecs = competitor.BaselineTimeSecs;
+        editingCompetitor = competitor;
+    }
+    void UpdateBaseline()
+    {
+        editingCompetitor = null;
+    }   
+    void CancelEdit()
+    {
+        editingCompetitor.BaselineTimeMins = origBaselineTimeMins;
+        editingCompetitor.BaselineTimeSecs = origBaselineTimeSecs;
+        editingCompetitor = null;    
+    }
+}

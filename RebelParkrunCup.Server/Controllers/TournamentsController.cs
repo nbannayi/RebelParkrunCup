@@ -33,10 +33,20 @@ namespace RebelParkrunCup.Server.Controllers
 
         // GET: api/runners
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tournament>>> GetTournaments()
+        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournaments()
         {
             var tournaments = await _context.Tournaments.ToListAsync();
-            return Ok(tournaments);
+            
+            var tournamentDtos = tournaments.Select(t => new TournamentDto
+            {                
+                Id = t.Id,
+                Name = t.Name,
+                StartDate = t.StartDate,
+                EndDate = t.EndDate,
+                Active = t.Active
+            }).ToList();
+
+            return Ok(tournamentDtos);
         }
 
         // POST: api/runners
