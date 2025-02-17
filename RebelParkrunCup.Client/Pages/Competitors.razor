@@ -6,7 +6,7 @@
 <h3>COMPETITORS: @activeTournament.Name</h3>
 
 <p>Use this screen to add and remove runners to the currently active tournament using mouse drag select, SHIFT and CTRL keys.  
-    baseline times can then be set.</p>
+    Baseline times can then be set.</p>
 
 <div style="display: flex; height: 70vh; gap: 20px;">
     <!-- Runner Selection (Left Panel) -->
@@ -53,8 +53,8 @@
                             else
                             {
                                 <!-- View Mode -->
-                                <td>@competitor.BaselineTimeMins</td>
-                                <td>@competitor.BaselineTimeSecs</td>
+                                <td>@($"{competitor.BaselineTimeMins:D2}")</td>
+                                <td>@($"{competitor.BaselineTimeSecs:D2}")</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm" @onclick="() => EditBaseline(competitor)">Set Baseline</button>
                                     <button class="btn btn-danger btn-sm" @onclick="() => RemoveCompetitor(competitor.Id)">Remove</button>
@@ -70,9 +70,10 @@
 <p/>
 <button class="btn btn-primary text-white" @onclick="AddRunners">Add Selected</button>
 <button class="btn btn-success" @onclick="SaveCompetitors">Save Changes</button>
-<b>@competitors.Count</b> of <b>@(competitors.Count + availableRunners.Count)</b> runners added to tournament.
+<b>@competitors.Count</b> of <b>@(competitors.Count + availableRunners.Count)</b> runners @action to tournament.
 
 @code {
+    private Tournament activeTournamentEntity = new();
     private List<TournamentDto> tournaments = new();
     private List<Runner> availableRunners = new();
     private List<Runner> allRunners = new();
@@ -82,6 +83,7 @@
     private TournamentDto activeTournament = new();
     private int origBaselineTimeMins = 0;
     private int origBaselineTimeSecs = 0;
+    private string action = "added";
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,6 +94,14 @@
         if (activeTournament != null)
         {
             selectedTournamentId = activeTournament.Id;
+            activeTournamentEntity =
+                new Tournament 
+                {
+                    Id = activeTournament.Id,
+                    Name = activeTournament.Name,
+                    Active = activeTournament.Active
+                };
+
             await LoadCompetitors(); // Load competitors automatically
         }
 
@@ -112,18 +122,24 @@
     private async Task LoadTournaments()
     {
         // Fetch tournaments from API
-        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments");
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments");        
         Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
     }
 
     private async Task LoadCompetitors()
     {        
-
         if (activeTournament != null)
         {
             // Fetch competitors for the selected tournament
             competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}");
                             
+            // Sort competitors by name.
+            SortCompetitors("Name");
+            SortCompetitors("Name");      
+
+            // Sort available runners by name.  
+            SortAvailableRunners();      
+
             // Load available runners (excluding those already in competitors)
             allRunners = await Http.GetFromJsonAsync<List<Runner>>("api/runners");
             availableRunners = allRunners.Where(r => !competitors.Any(c => c.RunnerId == r.Id)).ToList() ?? new List<Runner>();
@@ -168,6 +184,8 @@
             availableRunners = new List<Runner>(); 
             StateHasChanged(); 
             availableRunners = temp; 
+
+            action = "added";
             StateHasChanged(); // Trigger UI refresh again
         }
     }
@@ -187,16 +205,45 @@
             competitors = competitors.Where(c => c.Id != competitorId).ToList(); // Reassign list
         }
 
+        action = "added";
         StateHasChanged();
     }
 
     private async Task SaveCompetitors()
     {
-        if (competitors.Count > 0)
+        var competitorEntities = competitors.Select(c => new Competitor
+            {                
+                Id = c.Id,
+                RunnerId = c.RunnerId,
+                Runner = new(), // add on server side.
+                TournamentId = activeTournament.Id,
+                Tournament = new(), // add on server side.
+                BaselineTimeMins = c.BaselineTimeMins,  
+                BaselineTimeSecs = c.BaselineTimeSecs   
+            }).ToList();
+
+        try
         {
-            await Http.PostAsJsonAsync("api/competitors", competitors);
+            var response = await Http.PostAsJsonAsync("api/competitors/saveall", competitorEntities);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Competitors saved successfully!");
+                action = "saved";
+            }
+            else
+            {
+                Console.WriteLine("Error saving competitors.");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }  
+
+        StateHasChanged();  
     }
+
     private string sortBy = "Name"; // Default sort column
     private bool isAscending = true; // Default sort order
 
@@ -244,10 +291,21 @@
     {
         origBaselineTimeMins = competitor.BaselineTimeMins;
         origBaselineTimeSecs = competitor.BaselineTimeSecs;
+
         editingCompetitor = competitor;
     }
-    void UpdateBaseline()
+    async Task UpdateBaseline()
     {
+        if (editingCompetitor.BaselineTimeMins < 0 || editingCompetitor.BaselineTimeMins > 59)
+        {            
+            await JSRuntime.InvokeVoidAsync("alert", "Baseline minutes must be between 0 and 59.");
+            return;
+        }
+        if (editingCompetitor.BaselineTimeSecs < 0 || editingCompetitor.BaselineTimeSecs > 59)
+        {            
+            await JSRuntime.InvokeVoidAsync("alert", "Baseline seconds must be between 0 and 59.");
+            return;
+        }      
         editingCompetitor = null;
     }   
     void CancelEdit()

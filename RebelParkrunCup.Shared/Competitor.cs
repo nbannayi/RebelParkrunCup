@@ -1,7 +1,4 @@
-using System.Text.Json.Serialization;
-
 namespace RebelParkrunCup.Shared;
-
 public class Competitor
 {
     public int Id { get; set; }
