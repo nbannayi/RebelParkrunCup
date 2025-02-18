@@ -8,6 +8,7 @@ namespace RebelParkrunCup.Server.Data
         public DbSet<Runner> Runners { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
         public DbSet<Competitor> Competitors { get; set; }
+        public DbSet<Location> Locations { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
