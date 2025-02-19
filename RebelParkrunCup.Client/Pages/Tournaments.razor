@@ -103,6 +103,7 @@
     private List<Tournament> tournaments = new();
     private Tournament? selectedTournament;
     private Tournament? editingTournament;
+    private Tournament? origTournament;
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,6 +135,8 @@
 
     private void EditTournament(Tournament tournament)
     {
+        origTournament = tournament;
+
         editingTournament = new Tournament
         {
             Id = tournament.Id,
@@ -150,9 +153,19 @@
         var tournamentToUpdate = tournaments.FirstOrDefault(t => t.Id == editingTournament.Id);
         if (tournamentToUpdate != null)
         {
-            tournamentToUpdate.Name = editingTournament.Name;
-            tournamentToUpdate.StartDate = editingTournament.StartDate;
-            tournamentToUpdate.EndDate = editingTournament.EndDate;
+            if (editingTournament.Name == "" || editingTournament.StartDate > editingTournament.EndDate)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    "A tournament name must be supplied and start date must be before end date.");
+
+                return;            
+            }
+            else
+            {
+                tournamentToUpdate.Name = editingTournament.Name;
+                tournamentToUpdate.StartDate = editingTournament.StartDate;
+                tournamentToUpdate.EndDate = editingTournament.EndDate;
+            }
         }
         
         await Http.PutAsJsonAsync($"api/tournaments/{editingTournament.Id}", tournamentToUpdate);

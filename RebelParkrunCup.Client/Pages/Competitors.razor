@@ -92,7 +92,7 @@
         await LoadTournaments();
 
         // Find the active tournament
-        activeTournament = tournaments.FirstOrDefault(t => t.Active);
+        activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
         if (activeTournament != null)
         {
             selectedTournamentId = activeTournament.Id;
@@ -124,7 +124,7 @@
     private async Task LoadTournaments()
     {
         // Fetch tournaments from API
-        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments");        
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
         Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
     }
 
@@ -133,7 +133,7 @@
         if (activeTournament != null)
         {
             // Fetch competitors for the selected tournament
-            competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}");
+            competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}") ?? new List<CompetitorDto>();
                             
             // Sort competitors by name.
             SortCompetitors("Name");
@@ -143,8 +143,8 @@
             SortAvailableRunners();      
 
             // Load available runners (excluding those already in competitors)
-            allRunners = await Http.GetFromJsonAsync<List<Runner>>("api/runners");
-            availableRunners = allRunners.Where(r => !competitors.Any(c => c.RunnerId == r.Id)).ToList() ?? new List<Runner>();
+            allRunners = await Http.GetFromJsonAsync<List<Runner>>("api/runners") ?? new List<Runner>();
+            availableRunners = allRunners.Where(r => !competitors.Any(c => c.RunnerId == r.Id)).ToList();
         }        
     }
 
@@ -200,7 +200,10 @@
         {
             // Restore the runner to available list.
             var runner = allRunners.FirstOrDefault(r => r.Id == competitorToRemove.RunnerId);
-            availableRunners = availableRunners.Append(runner).ToList(); // Reassign list
+            if (runner != null)
+            {
+                availableRunners = availableRunners.Append(runner).ToList(); // Reassign list
+            }
             SortAvailableRunners();
 
             // Remove competitor from the list
@@ -298,12 +301,12 @@
     }
     async Task UpdateBaseline()
     {
-        if (editingCompetitor.BaselineTimeMins < 0 || editingCompetitor.BaselineTimeMins > 59)
+        if (editingCompetitor != null && (editingCompetitor.BaselineTimeMins < 0 || editingCompetitor.BaselineTimeMins > 59))
         {            
             await JSRuntime.InvokeVoidAsync("alert", "Baseline minutes must be between 0 and 59.");
             return;
         }
-        if (editingCompetitor.BaselineTimeSecs < 0 || editingCompetitor.BaselineTimeSecs > 59)
+        if (editingCompetitor != null && (editingCompetitor.BaselineTimeSecs < 0 || editingCompetitor.BaselineTimeSecs > 59))
         {            
             await JSRuntime.InvokeVoidAsync("alert", "Baseline seconds must be between 0 and 59.");
             return;
@@ -312,8 +315,11 @@
     }   
     void CancelEdit()
     {
-        editingCompetitor.BaselineTimeMins = origBaselineTimeMins;
-        editingCompetitor.BaselineTimeSecs = origBaselineTimeSecs;
-        editingCompetitor = null;    
+        if (editingCompetitor != null)
+        {
+            editingCompetitor.BaselineTimeMins = origBaselineTimeMins;
+            editingCompetitor.BaselineTimeSecs = origBaselineTimeSecs;
+            editingCompetitor = null;
+        }
     }
 }

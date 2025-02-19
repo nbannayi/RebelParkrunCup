@@ -86,7 +86,8 @@
     private List<Runner> runners = new();
     private Runner? selectedRunner;
     private Runner? editingRunner;
-
+    private Runner? origRunner;
+    
     protected override async Task OnInitializedAsync()
     {
         await LoadRunners();
@@ -106,6 +107,8 @@
 
     private void EditRunner(Runner runner)
     {
+        origRunner = runners.FirstOrDefault(r => r.Id == runner.Id);
+
         editingRunner = new Runner
         {
             Id = runner.Id,
@@ -122,18 +125,28 @@
         var runnerToUpdate = runners.FirstOrDefault(r => r.Id == editingRunner.Id);
         if (runnerToUpdate != null)
         {
-            runnerToUpdate.FirstName = editingRunner.FirstName;
-            runnerToUpdate.LastName = editingRunner.LastName;
-            runnerToUpdate.ParkrunID = editingRunner.ParkrunID;
+            if (editingRunner.FirstName == "" || editingRunner.LastName == "" || editingRunner.ParkrunID == "")
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    "A first and last name as well as a parkrun id must be supplied.");
+
+                return;            
+            }
+            else
+            {
+                runnerToUpdate.FirstName = editingRunner.FirstName;
+                runnerToUpdate.LastName = editingRunner.LastName;
+                runnerToUpdate.ParkrunID = editingRunner.ParkrunID; 
+            }
         }
-        
+                    
         await Http.PutAsJsonAsync($"api/runners/{editingRunner.Id}", runnerToUpdate);
 
         editingRunner = null; // Exit edit mode
     }
 
     private void CancelEdit()
-    {
+    {        
         editingRunner = null; // Exit edit mode
     }
 

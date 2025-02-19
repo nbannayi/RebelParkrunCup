@@ -79,8 +79,7 @@
 @code {
     private List<Location> locations = new();
     private Location? selectedLocation;
-    private Location? editingLocation;
-    private string origName;
+    private Location? editingLocation;    
     protected override async Task OnInitializedAsync()
     {
         await LoadLocations();
@@ -99,9 +98,7 @@
     }
     
     private void EditLocation(Location location)
-    {
-        origName = location.Name;
-
+    {        
         editingLocation = new Location
         {
             Id = location.Id,
@@ -116,12 +113,14 @@
         var locationToUpdate = locations.FirstOrDefault(l => l.Id == editingLocation.Id);                
         if (locationToUpdate != null)
         {
-            locationToUpdate.Name = editingLocation.Name;
-            if (locationToUpdate.Name == "")
+            if (editingLocation.Name == "")
             {
-                await JSRuntime.InvokeVoidAsync("alert", "A name must be supplied for a parkrun location.");
-                locationToUpdate.Name = origName;
+                await JSRuntime.InvokeVoidAsync("alert", "A name must be supplied for a parkrun location.");                
                 return;
+            }
+            else
+            {
+                locationToUpdate.Name = editingLocation.Name;
             }
         }
         
