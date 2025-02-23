@@ -1,0 +1,105 @@
+@page "/ties"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using RebelParkrunCup.Shared
+
+<PageTitle>Rebel parkrun Cup Manager - Tournaments</PageTitle>
+
+<h3>TIES: @activeTournament.Name</h3>
+
+<p>Use this screen to add, view and update parkrun Cup ties between competitors.</p>
+
+<EditForm Model="newTie" OnValidSubmit="SaveTie">
+
+    <!-- Competitor 1 -->
+    <label><b>Competitor 1:</b></label>
+    <InputSelect @bind-Value="newTie.Competitor1Id">
+        <option value="">Select competitor1</option>
+        @foreach (var competitor in competitors)
+        {
+            <option value="@competitor.Id">@competitor.RunnerFirstName @competitor.RunnerLastName</option>
+        }
+    </InputSelect>
+
+    <!-- Competitor 2 -->
+    <label<b>Competitor 2:</b></label>
+    <InputSelect @bind-Value="newTie.Competitor2Id">
+        <option value="">Select competitor2</option>
+        @foreach (var competitor in competitors)
+        {
+            <option value="@competitor.Id">@competitor.RunnerFirstName @competitor.RunnerLastName</option>
+        }
+    </InputSelect>
+
+    <!-- Location -->
+    <label><b>Location:</b></label>
+    <InputSelect @bind-Value="newTie.LocationId">
+        <option value="">Select location</option>
+        @foreach (var location in locations)
+        {
+            <option value="@location.Id">@location.Name</option>
+        }
+    </InputSelect>
+
+    <!-- Location -->
+    <label><b>Round:</b></label>
+    <InputSelect @bind-Value="newTie.Round">
+        <option value="">Select round</option>
+        @for (var n = 1; n <= 10; n++)
+        {
+            <option>@n</option>
+        }
+    </InputSelect>
+
+    <!-- Submit Button -->
+    <button type="submit">Save</button>
+</EditForm>
+
+@if (message is not null)
+{
+    <p>@message</p>
+}
+
+@code {
+    private Tie newTie = new();
+    private List<CompetitorDto> competitors = new();
+    private List<Location> locations = new();
+    private string? message;
+
+    private List<TournamentDto> tournaments = new();
+
+    private TournamentDto activeTournament = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTournaments();
+
+        // Find the active tournament
+        activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
+
+        // Load Competitors and Locations from API
+        competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}") ?? new List<CompetitorDto>();
+        locations = await Http.GetFromJsonAsync<List<Location>>("api/locations") ?? new();
+    }
+
+    private async Task LoadTournaments()
+    {
+        // Fetch tournaments from API
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
+        Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
+    }
+
+    private async Task SaveTie(EditContext editContext)
+    {
+        var response = await Http.PostAsJsonAsync("api/ties", newTie);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Tie saved successfully!";
+            newTie = new Tie(); // Reset form
+        }
+        else
+        {
+            message = "Error saving tie.";
+        }
+    }
+}

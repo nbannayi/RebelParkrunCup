@@ -16,4 +16,7 @@ public class Competitor
     // Time fields.
     public int BaselineTimeMins { get; set; }
     public int BaselineTimeSecs { get; set; }
+    
+    public List<Tie> TiesAsCompetitor1 { get; set; } = new();
+    public List<Tie> TiesAsCompetitor2 { get; set; } = new();
 }
