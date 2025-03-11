@@ -34,8 +34,4 @@ public class Tie
     public int Competitor2Delta { get; set; }
 
     public DateTime Date { get; set; }
-
-    // Competitor 1 win.
-    [NotMapped]
-    public bool Competitor1Win => Competitor1Delta < Competitor2Delta;
 }
