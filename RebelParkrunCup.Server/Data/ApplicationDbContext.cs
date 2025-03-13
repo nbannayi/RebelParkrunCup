@@ -32,12 +32,6 @@ namespace RebelParkrunCup.Server.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Tie>()
-                .HasOne(bt => bt.Tournament)
-                .WithMany(t => t.Ties)
-                .HasForeignKey(bt => bt.TournamentId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Tie>()
                 .HasOne(t => t.Competitor1)
                 .WithMany(c => c.TiesAsCompetitor1)
                 .HasForeignKey(t => t.Competitor1Id)

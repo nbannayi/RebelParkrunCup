@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RebelParkrunCup.Server.Data;
@@ -16,17 +17,49 @@ namespace RebelParkrunCup.Server.Controllers
             _context = context;
         }
 
+         // POST: api/runners
+        [HttpPost]
+        public async Task<IActionResult> CreateTie([FromBody] Tie tie)
+        {
+            if (tie == null)
+            {
+                return BadRequest("Tie data is required");
+            }
+
+            // Optionally: Add validation for data here (like checking if the name is valid)
+
+            _context.Ties.Add(tie);
+            await _context.SaveChangesAsync();
+
+            // Return a 201 status code with the created runner (you could return just the ID too if desired)
+            return Ok(tie.Id);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTie(int id)
+        {
+            var tie = await _context.Ties.FindAsync(id);
+            if (tie == null)
+            {
+                return NotFound();
+            }
+
+            _context.Ties.Remove(tie);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<TieDto>>> GetTies(int tournamentId)
         {
             var ties = await _context.Ties
                 .Include(t => t.Competitor1)
-                    .ThenInclude(c => c.Runner)
+                .Include(t => t.Competitor1.Runner)
                 .Include(t => t.Competitor2)
-                    .ThenInclude(c => c.Runner)
-                .Include(t => t.Tournament)
+                .Include(t => t.Competitor2.Runner)
                 .Include(t => t.Location)
-                .Where(t => t.Tournament.Id == tournamentId)
+                .Where(t => t.Competitor1.TournamentId == tournamentId)
                 .ToListAsync();
 
             var tieDtos = ties.Select(t => new TieDto

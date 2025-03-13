@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @using RebelParkrunCup.Shared
+@using System.Text.Json
 
 <PageTitle>Rebel parkrun Cup Manager - Tournaments</PageTitle>
 
@@ -17,7 +18,7 @@
         <option value="">Select competitor1</option>
         @foreach (var competitor in competitors)
         {
-            <option value="@competitor.Id">@competitor.RunnerFirstName @competitor.RunnerLastName</option>
+            <option value="@competitor.Id">@competitor.RunnerFirstName @competitor.RunnerLastName</option>            
         }
     </InputSelect>
 
@@ -168,19 +169,33 @@
             new object[] { "Are you sure you want to delete this tie?" });
         
         if (confirmed)
+        {            
+            await DeleteTie(tieId);            
+        }
+    }
+
+    private async Task DeleteTie(int tieId)
+    {
+        if (tieId == 0) return;
+
+        var response = await Http.DeleteAsync($"api/ties/{tieId}");
+
+        if (response.IsSuccessStatusCode)
         {
-            // TODO.
-            //await DeleteTie(tieId);            
+            ties.RemoveAll(t => t.Id == tieId); // Remove from UI
         }
     }
 
     private async Task SaveTie(EditContext editContext)
     {
+        Console.WriteLine(JsonSerializer.Serialize(newTie));
         var response = await Http.PostAsJsonAsync("api/ties", newTie);
         if (response.IsSuccessStatusCode)
         {
-            message = "Tie saved successfully!";
-            newTie = new Tie(); // Reset form
+            message = "Tie saved successfully.";
+            newTie = new(); // Reset form
+            ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>();   
+            StateHasChanged(); // Force UI update
         }
         else
         {

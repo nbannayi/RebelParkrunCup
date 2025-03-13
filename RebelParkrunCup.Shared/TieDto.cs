@@ -5,6 +5,12 @@ public class TieDto
 {
     public int Id { get; set; }
 
+    public int LocationId { get; set; } 
+
+    public int Competitor1Id { get; set; } 
+
+    public int Competitor2Id { get; set; } 
+
     public int Round { get; set; }    
 
     public string Competitor1FirstName { get; set; }

@@ -5,23 +5,19 @@ public class Tie
 {
     public int Id { get; set; }
 
-    // Foreign Key - Tournament.    
-    public int TournamentId { get; set; }   
-    public Tournament Tournament { get; set; }
-
     public int Round { get; set; }    
 
     // Foreign Key - Competitor1.
     public int Competitor1Id { get; set; }
-    public Competitor Competitor1 { get; set; }
+    public Competitor? Competitor1 { get; set; }
 
     // Foreign Key - Competitor2.
     public int Competitor2Id { get; set; }
-    public Competitor Competitor2 { get; set; }
+    public Competitor? Competitor2 { get; set; }
 
     // Foreign Key - location.
     public int LocationId { get; set; }
-    public Location Location { get; set; }
+    public Location? Location { get; set; }
 
     // Time fields - Competitor 1.
     public int Competitor1ResultMins { get; set; }
