@@ -46,7 +46,7 @@
     <label><b>in round</b></label>
     <InputSelect @bind-Value="newTie.Round">
         <option value="">Select round</option>
-        @for (var n = 1; n <= 10; n++)
+        @for (var n = 1; n <= 7; n++)
         {
             <option>@n</option>
         }
@@ -59,8 +59,23 @@
     <!-- Submit Button -->
     <button type="submit">Add tie</button>
 </EditForm>
+
+@if (message is not null)
+{
+    @message
+}
 <p />
-<div class="table-container" style="max-height: calc(100vh - 270px)">
+
+<b>Round view </b>
+<InputSelect @bind-Value="@roundView">
+    <option value="0">All rounds</option>    
+    @for (var n = 1; n <= 7; n++)
+    {
+        <option>@n</option>
+    }
+</InputSelect>
+
+<div class="table-container" style="max-height: calc(100vh - 295px)" overflow-x = "auto">
     <table class="styled-table">
         <thead>
             <tr>
@@ -86,48 +101,81 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var tie in ties)
+            @foreach (var tie in ties.Where(t => roundView == 0 || t.Round == roundView))
             {
-                <!-- Normal Row -->
-                <tr>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightgreen" : "lightcoral")">
-                        @tie.Competitor1FullName
-                    </td>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightgreen" : "lightcoral")">
-                        @tie.Competitor1Time
-                    </td>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightgreen" : "lightcoral")">
-                        @tie.Competitor1Delta
-                    </td>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
-                        @tie.Competitor2FullName
-                    </td>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
-                        @tie.Competitor2Time
-                    </td>
-                    <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
-                        @tie.Competitor2Delta
-                    </td>
-                    <td>@tie.Location</td>
-                    <td>@tie.Date.ToString("dd/MM/yyyy")</td>
-                    <td>@tie.Round</td>
-                    <td>
-                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(tie.Id)">Delete</button>
-                    </td>
-                </tr>
+                <tr class="@(tie == selectedTie ? "table-primary" : "")"
+                    @onclick="() => SelectTie(tie)">
+                    
+                    @if (tie.Id == editingTie?.Id)
+                    {
+                        <!-- Editable Row -->
+                        <td>@tie.Competitor1FullName</td>
+                        <td>@tie.Competitor1Time</td>
+                        <td>@tie.Competitor1Delta</td>
+                        <td>@tie.Competitor2FullName</td>
+                        <td>@tie.Competitor2Time</td>
+                        <td>@tie.Competitor2Delta</td>
+                        <td>
+                            <select @bind="editingTie.LocationId" class="form-control" text-height=25px>                                
+                                @foreach (var location in locations)
+                                {
+                                    <option value="@location.Id">@location.Name</option>
+                                }
+                            </select>
+                        </td>
+                        <td><InputDate @bind-Value="editingTie.Date" class="form-control" text-height=25px/></td>
+                  
+                        <td>@tie.Round</td>
+                        <td>
+                            <button class="btn btn-success" @onclick="UpdateTie">Save</button>
+                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                        </td>                        
+                    }
+                    else
+                    {   
+                        <!-- Normal Row -->
+                        <td style="background-color:@(tie.Competitor1Win ? "lightgreen" : "lightcoral")">
+                            @tie.Competitor1FullName
+                        </td>
+                        <td>
+                            <i>@tie.Competitor1Time</i>
+                        </td>
+                        <td style="color:@(tie.Competitor1Delta >= 0 ? "black" : "red")">
+                            <b>@tie.Competitor1Delta</b>
+                        </td>
+                        <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
+                            @tie.Competitor2FullName
+                        </td>
+                        <td>
+                            <i>@tie.Competitor2Time</i>
+                        </td>
+                        <td style="color:@(tie.Competitor2Delta >= 0 ? "black" : "red")">
+                            <b>@tie.Competitor2Delta</b>
+                        </td>
+                        <td>@tie.Location</td>
+                        <td>@tie.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@tie.Round</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(tie.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" @onclick="() => EditTie(tie)">Edit</button>
+                        </td>
+                    }
+                </tr>                   
             }
         </tbody>        
     </table>
 </div>
 
-<p><b>Total ties: </b>@ties.Count</p>
-
-@if (message is not null)
-{
-    <p>@message</p>
+@{
+    var filteredTies = ties.Where(t => roundView == 0 || t.Round == roundView).Count();
+    var totalTies = ties.Count();
 }
+<p><b>Total ties:</b> @filteredTies of @totalTies</p>
 
 @code {
+    private TieDto? selectedTie;
+    private TieDto? editingTie;
+    private int roundView = 0;
     private Tie newTie = new();
     private List<CompetitorDto> competitors = new();
     private List<Location> locations = new();
@@ -174,6 +222,27 @@
         }
     }
 
+    private void CancelEdit()
+    {        
+        editingTie = null; // Exit edit mode
+        StateHasChanged();
+    }
+
+    private void EditTie(TieDto tie)
+    {        
+        editingTie = new TieDto
+        {
+            Id = tie.Id,
+            Competitor1Id = tie.Competitor1Id,
+            Competitor2Id = tie.Competitor2Id,
+            Round = tie.Round,
+            Location = tie.Location,
+            LocationId = tie.LocationId,
+            Date = tie.Date
+        };
+
+    }
+
     private async Task DeleteTie(int tieId)
     {
         if (tieId == 0) return;
@@ -186,9 +255,49 @@
         }
     }
 
+
+    private async Task UpdateTie()
+    {
+        if (editingTie == null) return;
+
+        var tieToUpdate = ties.FirstOrDefault(t => t.Id == editingTie.Id);
+        if (tieToUpdate != null)
+        {
+            tieToUpdate.Location = locations.FirstOrDefault(l => l.Id == editingTie.LocationId).Name;
+            tieToUpdate.Date = editingTie.Date;            
+        }
+                    
+        // TODO.
+        //await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);
+
+        editingTie = null; // Exit edit mode
+    }
+
+    private void SelectTie(TieDto tie)
+    {
+        selectedTie = tie;
+    }
+
     private async Task SaveTie(EditContext editContext)
     {
-        Console.WriteLine(JsonSerializer.Serialize(newTie));
+        if (newTie.Competitor1Id == 0 || newTie.Competitor2Id == 0 || newTie.Round == 0 || newTie.LocationId == 0)
+        {
+            message = "Both competitors, round and location must be selected (use TBC if location not yet confirmed).";
+            return;
+        }
+
+        if (newTie.Date.DayOfWeek != DayOfWeek.Saturday)
+        {
+            message = "Tie date must be a Saturday.";
+            return;
+        }   
+
+        if (newTie.Competitor1Id == newTie.Competitor2Id)
+        {
+            message = "Competitors must be different.";
+            return;
+        }
+
         var response = await Http.PostAsJsonAsync("api/ties", newTie);
         if (response.IsSuccessStatusCode)
         {

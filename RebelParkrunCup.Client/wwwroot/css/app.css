@@ -105,28 +105,35 @@ code {
 /* Make the container scrollable */
 .table-container {
     overflow-y: auto;
+    overflow-x: auto;
     border: 1px solid #ddd;
     position: relative;
 }
 
 .styled-table {
     width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
     border-collapse: collapse;
 }
 
 .styled-table thead {
+    white-space: nowrap; /* Prevents text wrapping */
     position: sticky;
     top: 0;
     background-color: #01050a;
     color: white;
-    z-index: 100;
+    z-index: 110;
+    text-align: center;
+    max-width: fit-content;
+    font-size: 10;
 }
 
 .styled-table th, .styled-table td {
-    padding: 4px 8px; /* Reduce padding */
+    padding: 1px 1px; /* Reduce padding */
     height: 30px; /* Decrease row height */
-    font-size: 15px; /* Optionally reduce font size */
-    width: 150px; /* Adjust as needed */
+    font-size: 14px; /* Optionally reduce font size */
+    width: 100px; /* Adjust as needed */
     text-align: left;
     white-space: nowrap; /* Prevents text wrapping */
 }
@@ -149,6 +156,7 @@ code {
 .styled-table-container {
     max-height: 400px;
     overflow-y: auto;
+    overflow-x: auto;
     border: 1px solid #ddd;
 }
 

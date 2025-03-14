@@ -68,6 +68,7 @@
                         <td><input @bind="editingTournament.Name" class="form-control" /></td>
                         <td><input @bind="editingTournament.StartDate" class="form-control" type="date" /></td>
                         <td><input @bind="editingTournament.EndDate" class="form-control" type="date" /></td>
+                        <td>@tournament.Active</td>
                         <td>
                             <button class="btn btn-success" @onclick="SaveTournament">Save</button>
                             <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
