@@ -1,0 +1,16 @@
+﻿@page "/parkrunTest"
+@inject IJSRuntime JS
+
+<button @onclick="GetParkrunData">Get Parkrun Data</button>
+
+@result
+
+@code {
+    private string result;
+    private async Task GetParkrunData()
+    {
+        var runnerId = "2109849"; // Replace with the actual ID
+        result = await JS.InvokeAsync<string>("fetchParkrunData", runnerId);
+        Console.WriteLine(result); // The raw HTML response
+    }
+}

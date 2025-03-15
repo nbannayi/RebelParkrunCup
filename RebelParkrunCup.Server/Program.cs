@@ -17,6 +17,7 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpClient(); 
 
 // Add SQLite database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
