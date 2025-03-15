@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RebelParkrunCup.Server.Data;
@@ -55,22 +54,22 @@ namespace RebelParkrunCup.Server.Controllers
         {
             var ties = await _context.Ties
                 .Include(t => t.Competitor1)
-                .Include(t => t.Competitor1.Runner)
+                .Include(t => t.Competitor1 != null ? t.Competitor1.Runner : null)
                 .Include(t => t.Competitor2)
-                .Include(t => t.Competitor2.Runner)
+                .Include(t => t.Competitor2 != null ? t.Competitor2.Runner : null)
                 .Include(t => t.Location)
-                .Where(t => t.Competitor1.TournamentId == tournamentId)
+                .Where(t => t.Competitor1 != null && t.Competitor1.TournamentId == tournamentId)
                 .ToListAsync();
 
             var tieDtos = ties.Select(t => new TieDto
             {                
                 Id = t.Id,
-                Competitor1FirstName = t.Competitor1.Runner.FirstName,
-                Competitor1LastName = t.Competitor1.Runner.LastName, 
-                Competitor2FirstName = t.Competitor2.Runner.FirstName,
-                Competitor2LastName = t.Competitor2.Runner.LastName,
+                Competitor1FirstName = t.Competitor1?.Runner?.FirstName,
+                Competitor1LastName = t.Competitor1?.Runner?.LastName, 
+                Competitor2FirstName = t.Competitor2?.Runner?.FirstName,
+                Competitor2LastName = t.Competitor2?.Runner?.LastName,
                 Round = t.Round,
-                Location = t.Location.Name,
+                Location = t.Location?.Name,
                 Competitor1ResultMins = t.Competitor1ResultMins,
                 Competitor1ResultSecs = t.Competitor1ResultSecs,
                 Competitor1Delta = t.Competitor1Delta,                
@@ -81,6 +80,29 @@ namespace RebelParkrunCup.Server.Controllers
             }).ToList();
 
             return Ok(tieDtos);
+        }        
+
+          // PUT: api/ties/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutTie(int id, TieDto tie)
+        {
+            if (id != tie.Id)
+            {
+                return BadRequest("ID mismatch");
+            }
+
+            var existingTie = await _context.Ties.FindAsync(id);            
+            if (existingTie == null)
+            {
+                return NotFound();
+            }
+
+            // Update fields
+            existingTie.LocationId = tie.LocationId;
+            existingTie.Date = tie.Date;
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // Success, no content returned
         }
     }
 }

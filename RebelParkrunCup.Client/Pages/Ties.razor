@@ -13,7 +13,7 @@
 <EditForm Model="newTie" OnValidSubmit="SaveTie">
 
     <!-- Competitor 1 -->
-    <label><b>New Tie </b></label>
+    <label><b>Add</b></label>
     <InputSelect @bind-Value="newTie.Competitor1Id">
         <option value="">Select competitor1</option>
         @foreach (var competitor in competitors)
@@ -55,6 +55,11 @@
     <!-- Date -->
     <label><b>on</b></label>
     <InputDate @bind-Value="newTie.Date" />
+    
+    <label>
+        <b>TBC</b>
+        <InputCheckbox @bind-Value="IsChecked"/> 
+    </label> 
 
     <!-- Submit Button -->
     <button type="submit">Add tie</button>
@@ -173,6 +178,7 @@
 <p><b>Total ties:</b> @filteredTies of @totalTies</p>
 
 @code {
+    private bool isChecked = false;
     private TieDto? selectedTie;
     private TieDto? editingTie;
     private int roundView = 0;
@@ -195,8 +201,8 @@
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
 
         // Load Competitors, Locations and ties from API.
-        competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}") ?? new List<CompetitorDto>();
-        locations = await Http.GetFromJsonAsync<List<Location>>("api/locations") ?? new();
+        competitors = (await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}") ?? new List<CompetitorDto>()).OrderBy(c => c.RunnerFirstName).ToList();
+        locations = (await Http.GetFromJsonAsync<List<Location>>("api/locations") ?? new()).OrderBy(l => l.Name).ToList();
         ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>();   
 
         // Default the new tie to the coming Saturday.
@@ -235,8 +241,7 @@
             Id = tie.Id,
             Competitor1Id = tie.Competitor1Id,
             Competitor2Id = tie.Competitor2Id,
-            Round = tie.Round,
-            Location = tie.Location,
+            Round = tie.Round,            
             LocationId = tie.LocationId,
             Date = tie.Date
         };
@@ -255,20 +260,40 @@
         }
     }
 
-
     private async Task UpdateTie()
     {
         if (editingTie == null) return;
-
+    
         var tieToUpdate = ties.FirstOrDefault(t => t.Id == editingTie.Id);
         if (tieToUpdate != null)
         {
-            tieToUpdate.Location = locations.FirstOrDefault(l => l.Id == editingTie.LocationId).Name;
+            if (editingTie.Date.DayOfWeek != DayOfWeek.Saturday && editingTie.Date != new DateTime(1, 1, 1))
+            {
+                message = "Tie date must be a Saturday.";
+                return;
+            }   
+
+            if (editingTie.LocationId == 0)
+            {
+                message = "parkrun must be supplied.";
+                return;
+            }   
+
+            var location = locations.FirstOrDefault(l => l.Id == editingTie.LocationId);
+            if (location != null)
+            {
+                tieToUpdate.Location = location.Name;
+            }
+            else
+            {
+                message = "Location not found.";
+                return;
+            }
+            tieToUpdate.LocationId = editingTie.LocationId;
             tieToUpdate.Date = editingTie.Date;            
         }
-                    
-        // TODO.
-        //await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);
+                            
+        await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);
 
         editingTie = null; // Exit edit mode
     }
@@ -286,7 +311,7 @@
             return;
         }
 
-        if (newTie.Date.DayOfWeek != DayOfWeek.Saturday)
+        if (newTie.Date.DayOfWeek != DayOfWeek.Saturday && newTie.Date != new DateTime(1, 1, 1))
         {
             message = "Tie date must be a Saturday.";
             return;
@@ -311,7 +336,27 @@
             message = "Error saving tie.";
         }
     }
+    private bool IsChecked
+    {
+        get => isChecked;
+        set
+        {
+            isChecked = value;
+            UpdateDate();
+        }
+    }
 
+    private void UpdateDate()
+    {
+        Console.WriteLine($"UpdateDate: {isChecked}");
+        
+        if (isChecked)
+            newTie.Date = new DateTime(1, 1, 1); // Some default value
+        else
+            newTie.Date = DateTime.Now.AddDays(DayOfWeek.Saturday - DateTime.Now.DayOfWeek); // Next Saturday
+
+        StateHasChanged();
+    }
     private string sortColumn = "Competitor1FullName";
     private bool ascending = true;
 

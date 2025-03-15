@@ -13,15 +13,15 @@ public class TieDto
 
     public int Round { get; set; }    
 
-    public string Competitor1FirstName { get; set; }
+    public string? Competitor1FirstName { get; set; }
 
-    public string Competitor1LastName { get; set; }
+    public string? Competitor1LastName { get; set; }
 
-    public string Competitor2FirstName { get; set; }
+    public string? Competitor2FirstName { get; set; }
 
-    public string Competitor2LastName { get; set; }
+    public string? Competitor2LastName { get; set; }
 
-    public string Location { get; set; }
+    public string? Location { get; set; }
 
     // Time fields - Competitor 1.
     public int Competitor1ResultMins { get; set; }
