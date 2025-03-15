@@ -20,7 +20,7 @@
         </div>
 
     </div>
-    <p/><button type="submit" style="display: inline-block; width: auto;">Save</button>    
+    <p/><button type="submit" style="display: inline-block; width: auto;">Add Location</button>    
 </EditForm>
 
 @if (!string.IsNullOrEmpty(resultMessage))
@@ -48,10 +48,10 @@
                     @if (location.Id == editingLocation?.Id)
                     {
                         <!-- Editable Row -->
-                        <td><input @bind="editingLocation.Name" class="form-control" /></td>
+                        <td><input @bind="editingLocation.Name" style="width: 250px; min-width: 120px; max-width: 250px; height: 30px; font-size: 14px;" /></td>
                         <td>
-                            <button class="btn btn-success" @onclick="SaveLocation">Save</button>
-                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <button class="btn btn-success" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="SaveLocation">Save</button>
+                            <button class="btn btn-secondary" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="CancelEdit">Cancel</button>
                         </td>
                     }
                     else
@@ -59,8 +59,8 @@
                         <!-- Normal Row -->
                         <td>@location.Name</td>
                         <td>
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(location.Id)">Delete</button>
-                            <button class="btn btn-primary text-white" @onclick="() => EditLocation(location)">Rename</button>
+                            <button class="btn btn-danger" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => ConfirmDelete(location.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => EditLocation(location)">Rename</button>
                         </td>
                     }
                 </tr>

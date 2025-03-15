@@ -45,8 +45,8 @@
                             @if (competitor == editingCompetitor)
                             {
                                 <!-- Editing Mode -->
-                                <td><input type="number" class="form-control" @bind="editingCompetitor.BaselineTimeMins" /></td>
-                                <td><input type="number" class="form-control" @bind="editingCompetitor.BaselineTimeSecs" /></td>
+                                <td><input type="number" @bind="editingCompetitor.BaselineTimeMins" /></td>
+                                <td><input type="number" @bind="editingCompetitor.BaselineTimeSecs" /></td>
                                 <td>
                                     <button class="btn btn-success btn-sm" @onclick="UpdateBaseline">Update</button>
                                     <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>

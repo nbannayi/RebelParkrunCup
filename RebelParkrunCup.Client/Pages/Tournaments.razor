@@ -31,7 +31,7 @@
             <input type="date" class="form-control" id="endDate" @bind="newTournament.EndDate" style="width: 100%;" />
         </div>
     </div>
-    <button type="submit" style="display: inline-block; width: auto;">Save</button>    
+    <button type="submit" style="display: inline-block; width: auto;">Add Tournament</button>    
 </EditForm>
 
 @if (!string.IsNullOrEmpty(resultMessage))
@@ -65,13 +65,13 @@
                     @if (tournament.Id == editingTournament?.Id)
                     {
                         <!-- Editable Row -->
-                        <td><input @bind="editingTournament.Name" class="form-control" /></td>
-                        <td><input @bind="editingTournament.StartDate" class="form-control" type="date" /></td>
-                        <td><input @bind="editingTournament.EndDate" class="form-control" type="date" /></td>
+                        <td><input @bind="editingTournament.Name" /></td>
+                        <td><input @bind="editingTournament.StartDate" type="date" /></td>
+                        <td><input @bind="editingTournament.EndDate" type="date" /></td>
                         <td>@tournament.Active</td>
                         <td>
-                            <button class="btn btn-success" @onclick="SaveTournament">Save</button>
-                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <button class="btn btn-success" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="SaveTournament">Save</button>
+                            <button class="btn btn-secondary" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="CancelEdit">Cancel</button>
                         </td>
                     }
                     else
@@ -82,9 +82,9 @@
                         <td>@tournament.EndDate.ToString("dd/MM/yyyy")</td>
                         <td>@tournament.Active</td>
                         <td>
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(tournament.Id)">Delete</button>
-                            <button class="btn btn-primary text-white" @onclick="() => EditTournament(tournament)">Edit</button>
-                            <button class="btn btn-primary text-white" @onclick="() => MakeActive(tournament)"> @(tournament.Active ? "Active" : "Make Active")</button>                            
+                            <button class="btn btn-danger" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => ConfirmDelete(tournament.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => EditTournament(tournament)">Edit</button>
+                            <button class="btn btn-primary text-white" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => MakeActive(tournament)"> @(tournament.Active ? "Active" : "Make Active")</button>                            
                         </td>
                     }
                 </tr>

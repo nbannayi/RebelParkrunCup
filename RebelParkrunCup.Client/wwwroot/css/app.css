@@ -124,15 +124,28 @@ code {
     background-color: #01050a;
     color: white;
     z-index: 110;
-    text-align: center;
+    text-align: left;
     max-width: fit-content;
-    font-size: 10;
+    font-size: 11;
 }
 
-.styled-table th, .styled-table td {
-    padding: 1px 1px; /* Reduce padding */
-    height: 30px; /* Decrease row height */
-    font-size: 14px; /* Optionally reduce font size */
+.styled-table input {
+    width: 100%;
+    max-height: 25px;
+    max-width: 150px;
+    box-sizing: border-box; /* Ensures padding doesn't increase width */
+}
+
+.styled-table select {
+    width: 100%;
+    max-width: 150px;
+    max-height: 20px;
+}
+
+.styled-table td {
+    padding: 3px 3px; /* Reduce padding */
+    height: 25px; /* Decrease row height */
+    font-size: 10; /* Optionally reduce font size */
     width: 100px; /* Adjust as needed */
     text-align: left;
     white-space: nowrap; /* Prevents text wrapping */
@@ -149,7 +162,7 @@ code {
 .styled-table button {
     padding: 2px 6px;  /* Reduce padding */
     height: 26px;      /* Set a smaller height */
-    font-size: 14px;   /* Reduce font size */
+    font-size: 12;   /* Reduce font size */
     line-height: 1;    /* Prevent extra spacing */
 }
 

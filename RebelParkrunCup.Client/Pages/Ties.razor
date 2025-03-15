@@ -108,7 +108,7 @@
         <tbody>
             @foreach (var tie in ties.Where(t => roundView == 0 || t.Round == roundView))
             {
-                <tr class="@(tie == selectedTie ? "table-primary" : "")"
+                <tr key="@tie.Id" class="@(tie == selectedTie ? "table-primary" : "")"
                     @onclick="() => SelectTie(tie)">
                     
                     @if (tie.Id == editingTie?.Id)
@@ -121,19 +121,23 @@
                         <td>@tie.Competitor2Time</td>
                         <td>@tie.Competitor2Delta</td>
                         <td>
-                            <select @bind="editingTie.LocationId" class="form-control" text-height=25px>                                
+                            <select @bind="editingTie.LocationId" 
+                                style="width: 180px; min-width: 120px; max-width: 180px; height: 30px; font-size: 14px;">                                
                                 @foreach (var location in locations)
                                 {
                                     <option value="@location.Id">@location.Name</option>
                                 }
+                                @tie.Location
                             </select>
                         </td>
-                        <td><InputDate @bind-Value="editingTie.Date" class="form-control" text-height=25px/></td>
-                  
+                        <td>
+                            <InputDate @bind-Value="editingTie.Date" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" />
+                        </td>
+
                         <td>@tie.Round</td>
                         <td>
-                            <button class="btn btn-success" @onclick="UpdateTie">Save</button>
-                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <button class="btn btn-success" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="UpdateTie">Save</button>
+                            <button class="btn btn-secondary" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="CancelEdit">Cancel</button>
                         </td>                        
                     }
                     else
@@ -161,8 +165,8 @@
                         <td>@tie.Date.ToString("dd/MM/yyyy")</td>
                         <td>@tie.Round</td>
                         <td>
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(tie.Id)">Delete</button>
-                            <button class="btn btn-primary text-white" @onclick="() => EditTie(tie)">Edit</button>
+                            <button class="btn btn-danger" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => ConfirmDelete(tie.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => EditTie(tie)">Edit</button>
                         </td>
                     }
                 </tr>                   
@@ -231,21 +235,22 @@
     private void CancelEdit()
     {        
         editingTie = null; // Exit edit mode
-        StateHasChanged();
+        //StateHasChanged();
     }
 
     private void EditTie(TieDto tie)
     {        
+        Console.WriteLine($"Editing Tie - LocationId: {tie.LocationId}");  // Debugging
         editingTie = new TieDto
         {
             Id = tie.Id,
             Competitor1Id = tie.Competitor1Id,
             Competitor2Id = tie.Competitor2Id,
-            Round = tie.Round,            
+            Round = tie.Round,
+            Location = tie.Location,             
             LocationId = tie.LocationId,
             Date = tie.Date
         };
-
     }
 
     private async Task DeleteTie(int tieId)

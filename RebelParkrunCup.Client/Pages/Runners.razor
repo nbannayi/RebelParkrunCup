@@ -18,7 +18,7 @@
     <input type="Text" class="form-control" id="lastName" @bind="newRunner.LastName" style="display: inline-block; width: auto; margin-right: 10px;"/>    
     <label for="parkrunId"><b>parkrun Id:</b></label>
     <input type="Text" class="form-control" id="parkrunId" @bind="newRunner.ParkrunID" style="display: inline-block; width: auto; margin-right: 10px;"/>    
-    <button type="submit" style="display: inline-block; width: auto;">Save</button>    
+    <button type="submit" style="display: inline-block; width: auto;">Add Runner</button>    
 </EditForm>
 
 @if (!string.IsNullOrEmpty(resultMessage))
@@ -50,12 +50,12 @@
                     @if (runner.Id == editingRunner?.Id)
                     {
                         <!-- Editable Row -->
-                        <td><input @bind="editingRunner.FirstName" class="form-control" /></td>
-                        <td><input @bind="editingRunner.LastName" class="form-control" /></td>
-                        <td><input @bind="editingRunner.ParkrunID" class="form-control" /></td>
+                        <td><input @bind="editingRunner.FirstName" /></td>
+                        <td><input @bind="editingRunner.LastName" /></td>
+                        <td><input @bind="editingRunner.ParkrunID" /></td>
                         <td>
-                            <button class="btn btn-success" @onclick="SaveRunner">Save</button>
-                            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <button class="btn btn-success" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="SaveRunner">Save</button>
+                            <button class="btn btn-secondary" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="CancelEdit">Cancel</button>
                         </td>
                     }
                     else
@@ -65,8 +65,8 @@
                         <td>@runner.LastName</td>
                         <td>@runner.ParkrunID</td>
                         <td>
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
-                            <button class="btn btn-primary text-white" @onclick="() => EditRunner(runner)">Edit</button>
+                            <button class="btn btn-danger" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => ConfirmDelete(runner.Id)">Delete</button>
+                            <button class="btn btn-primary text-white" style="height: 24px; font-size: 14px; padding: 2px; border: 1px solid #ccc;" @onclick="() => EditRunner(runner)">Edit</button>
                         </td>
                     }
                 </tr>
