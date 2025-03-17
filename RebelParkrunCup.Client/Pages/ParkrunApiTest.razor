@@ -1,0 +1,81 @@
+﻿@page "/parkrunapitest"
+@inject HttpClient Http
+
+<h3>PARKRUN API TEST</h3>
+
+<h4>Parkrun Results</h4>
+
+<button @onclick="FetchParkrunResults">Get Results</button>
+
+@if (isLoading)
+{
+    <p>Loading...</p>   
+}
+
+@if (resultsDict.Any())
+{
+    <ul>
+        @foreach (var entry in resultsDict)
+        {
+            <li>
+                <strong>@entry.Key.RunnerId</strong> - @entry.Key.Event - @entry.Key.RunDate → @entry.Value
+            </li>
+        }
+    </ul>
+}
+else if (!isLoading)
+{
+    <p>No results found.</p>
+}
+
+@code {
+    private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
+        = new Dictionary<(string, string, string), string>();
+
+    private bool isLoading; 
+    private List<Result> parkrunResults = new List<Result>();
+    private async Task FetchParkrunResults()
+    {
+        isLoading = true;
+        resultsDict.Clear();
+        var runnerIds = new[] { "12345", "67890" }; // Example runner IDs
+
+        try
+        {
+            var response = 
+                await Http.GetFromJsonAsync<List<ParkrunResult>>(
+                $"api/ParkrunProxy?runnerId={string.Join("&runnerId=", runnerIds)}");
+
+            if (response != null)
+            {
+                resultsDict = response
+                    .SelectMany(r => r.Results)
+                    .ToDictionary(
+                        r => (r.RunnerId, r.Event, r.RunDate),  // Key
+                        r => r.Time                             // Value
+                    );
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class ParkrunResult
+    {
+        public string RunnerId { get; set; }
+        public List<Result> Results { get; set; }
+    }
+    public class Result
+    {
+        public string RunnerId { get; set; }
+        public string Event { get; set; }
+        public string RunDate { get; set; }
+        public string Time { get; set; }
+    }
+}
