@@ -1,5 +1,6 @@
 ﻿@page "/parkrunapitest"
 @inject HttpClient Http
+@using RebelParkrunCup.Shared
 
 <h3>PARKRUN API TEST</h3>
 
@@ -29,17 +30,59 @@ else if (!isLoading)
 }
 
 @code {
+    private List<TieDto> ties = new(); 
+    private List<CompetitorDto> competitors = new();
+    private List<Location> locations = new();
+    private List<TournamentDto> tournaments = new();
+    private TournamentDto activeTournament = new();
+    private List<Result> parkrunResults = new List<Result>();
+    private bool isLoading; 
     private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
         = new Dictionary<(string, string, string), string>();
 
-    private bool isLoading; 
-    private List<Result> parkrunResults = new List<Result>();
+    private async Task LoadTournaments()
+    {
+        // Fetch tournaments from API
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
+        Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTournaments();
+
+        // Find the active tournament
+        activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
+
+        // Load Competitors, Locations and ties from API.
+        competitors = (await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={activeTournament.Id}") ?? new List<CompetitorDto>()).OrderBy(c => c.RunnerFirstName).ToList();
+        locations = (await Http.GetFromJsonAsync<List<Location>>("api/locations") ?? new()).OrderBy(l => l.Name).ToList();
+        ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>();   
+    }
     private async Task FetchParkrunResults()
     {
         isLoading = true;
         resultsDict.Clear();
-        var runnerIds = new[] { "12345", "67890" }; // Example runner IDs
+        List<string> runnerIds = new(); 
+        
+        // Get list of all relevant ties.
+        var filteredTies = ties.Where(t => !t.Competitor1FullName.ToLower().Contains("bye") &&
+                                           !t.Competitor2FullName.ToLower().Contains("bye") &&
+                                           !t.Location.ToLower().Contains("bye") &&
+                                           !t.Location.ToLower().Contains("tbc") &&
+                                           t.Date < DateTime.Now).ToList();
 
+        // Get list of all relevant runners.
+        foreach (var tie in filteredTies)
+        {
+            var runner1ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id).RunnerParkrunId;
+            var runner2ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id).RunnerParkrunId;
+            runnerIds.Add(runner1ParkrunId);
+            runnerIds.Add(runner2ParkrunId);            
+        }   
+        runnerIds = runnerIds.Distinct().ToList();
+
+        // Fetch Parkrun results for all relevant runners and put in a dictionary.
         try
         {
             var response = 

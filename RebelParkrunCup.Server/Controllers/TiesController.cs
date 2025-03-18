@@ -64,8 +64,10 @@ namespace RebelParkrunCup.Server.Controllers
             var tieDtos = ties.Select(t => new TieDto
             {                
                 Id = t.Id,
+                Competitor1Id = t.Competitor1Id,
                 Competitor1FirstName = t.Competitor1?.Runner?.FirstName,
                 Competitor1LastName = t.Competitor1?.Runner?.LastName, 
+                Competitor2Id = t.Competitor2Id,
                 Competitor2FirstName = t.Competitor2?.Runner?.FirstName,
                 Competitor2LastName = t.Competitor2?.Runner?.LastName,
                 Round = t.Round,
