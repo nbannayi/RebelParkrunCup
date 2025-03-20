@@ -62,8 +62,10 @@
     </label> 
 
     <!-- Submit Button -->
-    <button type="submit">Add tie</button>
+    <button type="submit">Add tie</button>    
 </EditForm>
+
+<button @onclick="FetchParkrunResults" @attributes="@(canUpdateResults ? new Dictionary<string, object> { ["disabled"] = "disabled" } : null)">Get Results</button>
 
 @if (message is not null)
 {
@@ -197,6 +199,7 @@
 
     private List<TieDto> ties = new(); 
 
+    private bool canUpdateResults = false;
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
@@ -211,6 +214,9 @@
 
         // Default the new tie to the coming Saturday.
         newTie.Date = DateTime.Now.AddDays(DayOfWeek.Saturday - DateTime.Now.DayOfWeek);
+
+        // Determine button enablement for update.
+        canUpdateResults = !GetUpdateableResults().Any();
     }
 
     private async Task LoadTournaments()
@@ -218,6 +224,17 @@
         // Fetch tournaments from API
         tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
         Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
+    }
+
+    private List<TieDto> GetUpdateableResults()
+    {
+        // Determine whether there are ties to update.
+        return ties.Where(t => !t.Competitor1FullName.ToLower().Contains("bye") &&
+                                           !t.Competitor2FullName.ToLower().Contains("bye") &&
+                                           !t.Location.ToLower().Contains("bye") &&
+                                           !t.Location.ToLower().Contains("tbc") &&
+                                           t.Date < DateTime.Now &&
+                                           (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
     }
 
     private async Task ConfirmDelete(int tieId)
@@ -380,5 +397,10 @@
         ties = ascending
             ? ties.OrderBy(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList()
             : ties.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
+    }
+
+    private async Task FetchParkrunResults()
+    {
+        message = " Loading...";
     }
 }
