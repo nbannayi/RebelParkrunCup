@@ -35,10 +35,10 @@ public class TieDto
 
     public DateTime Date { get; set; }
 
-    public bool Competitor1Win => Competitor1Delta < Competitor2Delta;
+    public bool Competitor1Win => Competitor1Delta > Competitor2Delta;
     public string Competitor1FullName { get { return $"{Competitor1FirstName} {Competitor1LastName}"; } }
     public string Competitor2FullName { get { return $"{Competitor2FirstName} {Competitor2LastName}"; } }
 
     public string Competitor1Time { get { return $"{Competitor1ResultMins:D2}:{Competitor1ResultSecs:D2}"; } }
-    public string Competitor2Time { get { return $"{Competitor1ResultMins:D2}:{Competitor1ResultSecs:D2}"; } }
+    public string Competitor2Time { get { return $"{Competitor2ResultMins:D2}:{Competitor2ResultSecs:D2}"; } }
 }

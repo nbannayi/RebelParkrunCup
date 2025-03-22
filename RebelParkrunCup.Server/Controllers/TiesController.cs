@@ -72,6 +72,7 @@ namespace RebelParkrunCup.Server.Controllers
                 Competitor2LastName = t.Competitor2?.Runner?.LastName,
                 Round = t.Round,
                 Location = t.Location?.Name,
+                LocationId = t.LocationId,
                 Competitor1ResultMins = t.Competitor1ResultMins,
                 Competitor1ResultSecs = t.Competitor1ResultSecs,
                 Competitor1Delta = t.Competitor1Delta,                
@@ -88,6 +89,8 @@ namespace RebelParkrunCup.Server.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTie(int id, TieDto tie)
         {
+            Console.WriteLine("Tie: " + tie);
+
             if (id != tie.Id)
             {
                 return BadRequest("ID mismatch");
@@ -102,6 +105,15 @@ namespace RebelParkrunCup.Server.Controllers
             // Update fields
             existingTie.LocationId = tie.LocationId;
             existingTie.Date = tie.Date;
+            existingTie.Competitor1ResultMins = tie.Competitor1ResultMins;
+            existingTie.Competitor1ResultSecs = tie.Competitor1ResultSecs;
+            existingTie.Competitor1Delta = tie.Competitor1Delta; 
+            existingTie.Competitor2ResultMins = tie.Competitor2ResultMins;
+            existingTie.Competitor2ResultSecs = tie.Competitor2ResultSecs;
+            existingTie.Competitor2Delta = tie.Competitor2Delta; 
+
+            Console.WriteLine("Existing Tie: " + existingTie);
+
             await _context.SaveChangesAsync();
 
             return NoContent(); // Success, no content returned

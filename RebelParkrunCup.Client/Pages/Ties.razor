@@ -149,19 +149,19 @@
                             @tie.Competitor1FullName
                         </td>
                         <td>
-                            <i>@tie.Competitor1Time</i>
+                            @tie.Competitor1Time
                         </td>
                         <td style="color:@(tie.Competitor1Delta >= 0 ? "black" : "red")">
-                            <b>@tie.Competitor1Delta</b>
+                            @tie.Competitor1Delta
                         </td>
                         <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
                             @tie.Competitor2FullName
                         </td>
                         <td>
-                            <i>@tie.Competitor2Time</i>
+                            @tie.Competitor2Time
                         </td>
                         <td style="color:@(tie.Competitor2Delta >= 0 ? "black" : "red")">
-                            <b>@tie.Competitor2Delta</b>
+                            @tie.Competitor2Delta
                         </td>
                         <td>@tie.Location</td>
                         <td>@tie.Date.ToString("dd/MM/yyyy")</td>
@@ -200,6 +200,53 @@
     private List<TieDto> ties = new(); 
 
     private bool canUpdateResults = false;
+
+    private bool isLoading; 
+    private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
+        = new Dictionary<(string, string, string), string>();
+
+    private async Task FetchParkrunResultsApi()
+    {
+        resultsDict.Clear();
+        List<string> runnerIds = new(); 
+        
+        // Get list of all relevant ties.
+        var updateableTies = GetUpdateableResults();
+
+        // Get list of all relevant runners.
+        foreach (var tie in updateableTies)
+        {
+            var runner1ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id).RunnerParkrunId;
+            var runner2ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id).RunnerParkrunId;
+            runnerIds.Add(runner1ParkrunId);
+            runnerIds.Add(runner2ParkrunId);            
+        }   
+        runnerIds = runnerIds.Distinct().ToList();
+
+        // Fetch Parkrun results for all relevant runners and put in a dictionary.
+        try
+        {
+            var response = 
+                await Http.GetFromJsonAsync<List<ParkrunResult>>(
+                $"api/ParkrunProxy?runnerId={string.Join("&runnerId=", runnerIds)}");
+
+            if (response != null)
+            {
+                resultsDict = response
+                    .SelectMany(r => r.Results)
+                    .ToDictionary(
+                        r => (r.RunnerId, r.Event, r.RunDate),  // Key
+                        r => r.Time                             // Value
+                    );
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+            message = " Error fetching data.";
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
@@ -233,7 +280,7 @@
                                            !t.Competitor2FullName.ToLower().Contains("bye") &&
                                            !t.Location.ToLower().Contains("bye") &&
                                            !t.Location.ToLower().Contains("tbc") &&
-                                           t.Date < DateTime.Now &&
+                                           (t.Date < DateTime.Now && DateTime.Now.Hour >= 10) &&
                                            (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
     }
 
@@ -266,7 +313,13 @@
             Round = tie.Round,
             Location = tie.Location,             
             LocationId = tie.LocationId,
-            Date = tie.Date
+            Date = tie.Date,
+            Competitor1ResultMins = tie.Competitor1ResultMins,
+            Competitor1ResultSecs = tie.Competitor1ResultSecs,  
+            Competitor1Delta = tie.Competitor1Delta,
+            Competitor2ResultMins = tie.Competitor2ResultMins,
+            Competitor2ResultSecs = tie.Competitor2ResultSecs,  
+            Competitor2Delta = tie.Competitor2Delta                  
         };
     }
 
@@ -291,13 +344,13 @@
         {
             if (editingTie.Date.DayOfWeek != DayOfWeek.Saturday && editingTie.Date != new DateTime(1, 1, 1))
             {
-                message = "Tie date must be a Saturday.";
+                message = " Tie date must be a Saturday.";
                 return;
             }   
 
             if (editingTie.LocationId == 0)
             {
-                message = "parkrun must be supplied.";
+                message = " parkrun must be supplied.";
                 return;
             }   
 
@@ -308,14 +361,21 @@
             }
             else
             {
-                message = "Location not found.";
+                message = " Location not found.";
                 return;
             }
+
             tieToUpdate.LocationId = editingTie.LocationId;
-            tieToUpdate.Date = editingTie.Date;            
+            tieToUpdate.Date = editingTie.Date;   
+            tieToUpdate.Competitor1ResultMins = editingTie.Competitor1ResultMins;  
+            tieToUpdate.Competitor1ResultSecs = editingTie.Competitor1ResultSecs;  
+            tieToUpdate.Competitor1Delta = editingTie.Competitor1Delta;  
+            tieToUpdate.Competitor2ResultMins = editingTie.Competitor2ResultMins;  
+            tieToUpdate.Competitor2ResultSecs = editingTie.Competitor2ResultSecs;  
+            tieToUpdate.Competitor2Delta = editingTie.Competitor2Delta;
         }
-                            
-        await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);
+        
+        await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);                        
 
         editingTie = null; // Exit edit mode
     }
@@ -329,33 +389,33 @@
     {
         if (newTie.Competitor1Id == 0 || newTie.Competitor2Id == 0 || newTie.Round == 0 || newTie.LocationId == 0)
         {
-            message = "Both competitors, round and location must be selected (use TBC if location not yet confirmed).";
+            message = " Both competitors, round and location must be selected (use TBC if location not yet confirmed).";
             return;
         }
 
         if (newTie.Date.DayOfWeek != DayOfWeek.Saturday && newTie.Date != new DateTime(1, 1, 1))
         {
-            message = "Tie date must be a Saturday.";
+            message = " Tie date must be a Saturday.";
             return;
         }   
 
         if (newTie.Competitor1Id == newTie.Competitor2Id)
         {
-            message = "Competitors must be different.";
+            message = " Competitors must be different.";
             return;
         }
 
         var response = await Http.PostAsJsonAsync("api/ties", newTie);
         if (response.IsSuccessStatusCode)
         {
-            message = "Tie saved successfully.";
+            message = " Tie saved successfully.";
             newTie = new(); // Reset form
             ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>();   
             StateHasChanged(); // Force UI update
         }
         else
         {
-            message = "Error saving tie.";
+            message = " Error saving tie.";
         }
     }
     private bool IsChecked
@@ -399,8 +459,52 @@
             : ties.OrderByDescending(p => p.GetType().GetProperty(sortColumn)?.GetValue(p, null)).ToList();
     }
 
+    private string GetDate(string date)
+    {
+        return $"{date.Substring(0, 2)}-{date.Substring(3, 2)}-{date.Substring(6, 4)}";    
+    }
+
     private async Task FetchParkrunResults()
     {
         message = " Loading...";
+
+        await FetchParkrunResultsApi();
+
+        foreach (var tie in ties)
+        {
+            var competitor1 = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id);
+            var competitor2 = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id);
+
+            if (resultsDict.TryGetValue((competitor1.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out var time))
+            {
+                Console.WriteLine($"Competitor1: {competitor1.RunnerFirstName} {competitor1.RunnerLastName}");  
+                Console.WriteLine($"Time: {time}"); 
+
+                var timeTokens = time.Split(':').Select(int.Parse).ToArray();            
+                tie.Competitor1ResultMins = timeTokens[0];
+                tie.Competitor1ResultSecs = timeTokens[1];
+                tie.Competitor1Delta = 60*competitor1.BaselineTimeMins + competitor1.BaselineTimeSecs - 
+                                       60*tie.Competitor1ResultMins - tie.Competitor1ResultSecs;
+            }
+
+            if (resultsDict.TryGetValue((competitor2.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out time))
+            {
+                Console.WriteLine($"Competitor2: {competitor2.RunnerFirstName} {competitor2.RunnerLastName}");  
+                Console.WriteLine($"Time: {time}"); 
+
+                var timeTokens = time.Split(':').Select(int.Parse).ToArray();            
+                tie.Competitor2ResultMins = timeTokens[0];
+                tie.Competitor2ResultSecs = timeTokens[1];
+                tie.Competitor2Delta = 60*competitor2.BaselineTimeMins + competitor2.BaselineTimeSecs - 
+                                       60*tie.Competitor2ResultMins - tie.Competitor2ResultSecs;
+            }
+
+            EditTie(tie);
+            await UpdateTie();
+        }
+
+        editingTie = null;
+        StateHasChanged();
+        message = " Results updated.";
     }
 }
