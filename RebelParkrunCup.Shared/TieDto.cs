@@ -41,4 +41,17 @@ public class TieDto
 
     public string Competitor1Time { get { return $"{Competitor1ResultMins:D2}:{Competitor1ResultSecs:D2}"; } }
     public string Competitor2Time { get { return $"{Competitor2ResultMins:D2}:{Competitor2ResultSecs:D2}"; } }
+
+    public string Competitor1DeltaTime { get { return FormatDeltaTime(Competitor1Delta); } }
+    
+    public string Competitor2DeltaTime { get { return FormatDeltaTime(Competitor2Delta); } }
+
+    private string FormatDeltaTime(int delta)
+    {
+        var deltaAbsolute = Math.Abs(delta);
+        var mins = deltaAbsolute / 60;
+        var secs = deltaAbsolute % 60;    
+        var deltaTime = $"{mins:D2}:{secs:D2}";
+        return (delta < 0) ? "(" + deltaTime + ")" : deltaTime; 
+    }  
 }

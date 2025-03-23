@@ -91,13 +91,13 @@
                 <th @onclick="@(() => SortTable("Competitor1Time"))">Time1
                     @if(sortColumn == "Competitor1Time") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
                 <th @onclick="@(() => SortTable("Competitor1Delta"))">Delta1
-                    @if(sortColumn == "Competitor1Delta") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
+                    @if(sortColumn == "Competitor1DeltaTime") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
                 <th @onclick="@(() => SortTable("Competitor2FullName"))">Competitor2
                     @if(sortColumn == "Competitor2FullName") { <span>@(ascending ? "↑" : "↓")</span> }</th>
                 <th @onclick="@(() => SortTable("Competitor2Time"))">Time2
                     @if(sortColumn == "Competitor2Time") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
                 <th @onclick="@(() => SortTable("Competitor2Delta"))">Delta2
-                    @if(sortColumn == "Competitor2Delta") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
+                    @if(sortColumn == "Competitor2DeltaTime") { <span>@(ascending ? "↑" : "↓")</span> }</th>                
                 <th @onclick="@(() => SortTable("Location"))">Location 
                     @if(sortColumn == "Location") { <span>@(ascending ? "↑" : "↓")</span> }</th>
                 <th @onclick="@(() => SortTable("Date"))">Date 
@@ -118,10 +118,10 @@
                         <!-- Editable Row -->
                         <td>@tie.Competitor1FullName</td>
                         <td>@tie.Competitor1Time</td>
-                        <td>@tie.Competitor1Delta</td>
+                        <td>@tie.Competitor1DeltaTime</td>
                         <td>@tie.Competitor2FullName</td>
                         <td>@tie.Competitor2Time</td>
-                        <td>@tie.Competitor2Delta</td>
+                        <td>@tie.Competitor2DeltaTime</td>
                         <td>
                             <select @bind="editingTie.LocationId" 
                                 style="width: 180px; min-width: 120px; max-width: 180px; height: 30px; font-size: 14px;">                                
@@ -152,7 +152,7 @@
                             @tie.Competitor1Time
                         </td>
                         <td style="color:@(tie.Competitor1Delta >= 0 ? "black" : "red")">
-                            @tie.Competitor1Delta
+                            @tie.Competitor1DeltaTime
                         </td>
                         <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
                             @tie.Competitor2FullName
@@ -161,7 +161,7 @@
                             @tie.Competitor2Time
                         </td>
                         <td style="color:@(tie.Competitor2Delta >= 0 ? "black" : "red")">
-                            @tie.Competitor2Delta
+                            @tie.Competitor2DeltaTime
                         </td>
                         <td>@tie.Location</td>
                         <td>@tie.Date.ToString("dd/MM/yyyy")</td>
@@ -201,25 +201,27 @@
 
     private bool canUpdateResults = false;
 
-    private bool isLoading; 
     private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
         = new Dictionary<(string, string, string), string>();
 
-    private async Task FetchParkrunResultsApi()
+    private async Task FetchParkrunResultsApi(List<TieDto> updateableTies)
     {
         resultsDict.Clear();
         List<string> runnerIds = new(); 
         
-        // Get list of all relevant ties.
-        var updateableTies = GetUpdateableResults();
-
         // Get list of all relevant runners.
         foreach (var tie in updateableTies)
         {
-            var runner1ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id).RunnerParkrunId;
-            var runner2ParkrunId = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id).RunnerParkrunId;
-            runnerIds.Add(runner1ParkrunId);
-            runnerIds.Add(runner2ParkrunId);            
+            var competitor1 = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id);
+            var competitor2 = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id);
+            if (competitor1 != null && competitor2 != null)
+            {
+                var runner1ParkrunId = competitor1.RunnerParkrunId;
+                var runner2ParkrunId = competitor2.RunnerParkrunId;
+                runnerIds.Add(runner1ParkrunId);
+                runnerIds.Add(runner2ParkrunId);
+            }
+         
         }   
         runnerIds = runnerIds.Distinct().ToList();
 
@@ -278,8 +280,8 @@
         // Determine whether there are ties to update.
         return ties.Where(t => !t.Competitor1FullName.ToLower().Contains("bye") &&
                                            !t.Competitor2FullName.ToLower().Contains("bye") &&
-                                           !t.Location.ToLower().Contains("bye") &&
-                                           !t.Location.ToLower().Contains("tbc") &&
+                                           !(t.Location?.ToLower().Contains("bye") ?? false) &&
+                                           !(t.Location?.ToLower().Contains("tbc") ?? false) &&
                                            (t.Date < DateTime.Now && DateTime.Now.Hour >= 10) &&
                                            (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
     }
@@ -321,6 +323,8 @@
             Competitor2ResultSecs = tie.Competitor2ResultSecs,  
             Competitor2Delta = tie.Competitor2Delta                  
         };
+
+        StateHasChanged();
     }
 
     private async Task DeleteTie(int tieId)
@@ -378,6 +382,7 @@
         await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);                        
 
         editingTie = null; // Exit edit mode
+        StateHasChanged();
     }
 
     private void SelectTie(TieDto tie)
@@ -466,16 +471,17 @@
 
     private async Task FetchParkrunResults()
     {
-        message = " Loading...";
+        var updateableTies = GetUpdateableResults();
+        message = $" Retrieving results for {updateableTies.Count} ties...";
 
-        await FetchParkrunResultsApi();
+        await FetchParkrunResultsApi(updateableTies);
 
         foreach (var tie in ties)
         {
             var competitor1 = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id);
             var competitor2 = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id);
 
-            if (resultsDict.TryGetValue((competitor1.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out var time))
+            if (competitor1 != null && tie.Location != null && resultsDict.TryGetValue((competitor1.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out var time))
             {
                 Console.WriteLine($"Competitor1: {competitor1.RunnerFirstName} {competitor1.RunnerLastName}");  
                 Console.WriteLine($"Time: {time}"); 
@@ -487,7 +493,8 @@
                                        60*tie.Competitor1ResultMins - tie.Competitor1ResultSecs;
             }
 
-            if (resultsDict.TryGetValue((competitor2.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out time))
+            if (competitor2 != null && tie.Location != null && 
+                resultsDict.TryGetValue((competitor2.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out time))
             {
                 Console.WriteLine($"Competitor2: {competitor2.RunnerFirstName} {competitor2.RunnerLastName}");  
                 Console.WriteLine($"Time: {time}"); 
