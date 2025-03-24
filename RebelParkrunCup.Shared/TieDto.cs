@@ -35,7 +35,6 @@ public class TieDto
 
     public DateTime Date { get; set; }
 
-    public bool Competitor1Win => Competitor1Delta > Competitor2Delta;
     public string Competitor1FullName { get { return $"{Competitor1FirstName} {Competitor1LastName}"; } }
     public string Competitor2FullName { get { return $"{Competitor2FirstName} {Competitor2LastName}"; } }
 
@@ -45,6 +44,8 @@ public class TieDto
     public string Competitor1DeltaTime { get { return FormatDeltaTime(Competitor1Delta); } }
     
     public string Competitor2DeltaTime { get { return FormatDeltaTime(Competitor2Delta); } }
+
+    public int WinningCompetitor { get; set; }
 
     private string FormatDeltaTime(int delta)
     {

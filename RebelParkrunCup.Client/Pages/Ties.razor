@@ -8,7 +8,7 @@
 
 <h3>TIES: @activeTournament.Name</h3>
 
-<p>Use this screen to add, view and update parkrun Cup ties between competitors.</p>
+<p>Use this screen to add, view and update parkrun Cup ties. If results are available press 'Get results' to update times from the parkrun website.</p>
 
 <EditForm Model="newTie" OnValidSubmit="SaveTie">
 
@@ -145,8 +145,10 @@
                     else
                     {   
                         <!-- Normal Row -->
-                        <td style="background-color:@(tie.Competitor1Win ? "lightgreen" : "lightcoral")">
-                            @tie.Competitor1FullName
+                        <td style="background-color:@(
+                            tie.WinningCompetitor == 0 ? "inherit" : 
+                            tie.WinningCompetitor == 1 ? "lightgreen" : "inherit")">
+                            @(tie.WinningCompetitor == 1 ? "🏆" : "") @tie.Competitor1FullName 
                         </td>
                         <td>
                             @tie.Competitor1Time
@@ -154,8 +156,10 @@
                         <td style="color:@(tie.Competitor1Delta >= 0 ? "black" : "red")">
                             @tie.Competitor1DeltaTime
                         </td>
-                        <td style="background-color:@(tie.Competitor1Win ? "lightcoral" : "lightgreen")">
-                            @tie.Competitor2FullName
+                        <td style="background-color:@(
+                            tie.WinningCompetitor == 0 ? "inherit" : 
+                            tie.WinningCompetitor == 1 ? "inherit" : "lightgreen")">
+                            @(tie.WinningCompetitor == 2 ? "🏆" : "") @tie.Competitor2FullName
                         </td>
                         <td>
                             @tie.Competitor2Time
@@ -321,7 +325,8 @@
             Competitor1Delta = tie.Competitor1Delta,
             Competitor2ResultMins = tie.Competitor2ResultMins,
             Competitor2ResultSecs = tie.Competitor2ResultSecs,  
-            Competitor2Delta = tie.Competitor2Delta                  
+            Competitor2Delta = tie.Competitor2Delta,
+            WinningCompetitor = tie.WinningCompetitor
         };
 
         StateHasChanged();
@@ -377,6 +382,7 @@
             tieToUpdate.Competitor2ResultMins = editingTie.Competitor2ResultMins;  
             tieToUpdate.Competitor2ResultSecs = editingTie.Competitor2ResultSecs;  
             tieToUpdate.Competitor2Delta = editingTie.Competitor2Delta;
+            tieToUpdate.WinningCompetitor = editingTie.WinningCompetitor;
         }
         
         await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);                        
@@ -505,6 +511,23 @@
                 tie.Competitor2Delta = 60*competitor2.BaselineTimeMins + competitor2.BaselineTimeSecs - 
                                        60*tie.Competitor2ResultMins - tie.Competitor2ResultSecs;
             }
+
+            if (tie.Competitor1ResultMins > 0 && tie.Competitor2ResultMins > 0)
+            {
+                if (tie.Competitor1Delta > tie.Competitor2Delta)
+                    tie.WinningCompetitor = 1;
+                else
+                    tie.WinningCompetitor = 2;  
+            }
+            else
+            {
+                if (tie.Competitor1FullName.ToLower().Contains("bye"))
+                    tie.WinningCompetitor = 2;
+                else if (tie.Competitor2FullName.ToLower().Contains("bye"))
+                    tie.WinningCompetitor = 1;
+                else
+                    tie.WinningCompetitor = 0;
+            }      
 
             EditTie(tie);
             await UpdateTie();

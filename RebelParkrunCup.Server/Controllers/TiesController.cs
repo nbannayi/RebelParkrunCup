@@ -79,7 +79,8 @@ namespace RebelParkrunCup.Server.Controllers
                 Competitor2ResultMins = t.Competitor2ResultMins,
                 Competitor2ResultSecs = t.Competitor2ResultSecs,
                 Competitor2Delta = t.Competitor2Delta,
-                Date = t.Date
+                Date = t.Date,
+                WinningCompetitor = t.WinningCompetitor 
             }).ToList();
 
             return Ok(tieDtos);
@@ -110,7 +111,8 @@ namespace RebelParkrunCup.Server.Controllers
             existingTie.Competitor1Delta = tie.Competitor1Delta; 
             existingTie.Competitor2ResultMins = tie.Competitor2ResultMins;
             existingTie.Competitor2ResultSecs = tie.Competitor2ResultSecs;
-            existingTie.Competitor2Delta = tie.Competitor2Delta; 
+            existingTie.Competitor2Delta = tie.Competitor2Delta;
+            existingTie.WinningCompetitor = tie.WinningCompetitor; 
 
             Console.WriteLine("Existing Tie: " + existingTie);
 

@@ -30,4 +30,7 @@ public class Tie
     public int Competitor2Delta { get; set; }
 
     public DateTime Date { get; set; }
+
+    // 1 = Competitor 1 wins, 2 = Competitor 2 wins, 0 = Unknown.
+    public int WinningCompetitor { get; set; } 
 }
