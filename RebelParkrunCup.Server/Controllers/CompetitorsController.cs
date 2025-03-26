@@ -89,6 +89,27 @@ namespace RebelParkrunCup.Server.Controllers
             }
         }
 
+        [HttpGet("getall")]
+        public async Task<ActionResult<List<CompetitorDto>>> GetCompetitors()
+        {
+            var competitors = await _context.Competitors
+                .Include(c => c.Runner)
+                .Include(c => c.Tournament)
+                .ToListAsync();
+
+            var competitorDtos = competitors.Select(c => new CompetitorDto
+            {
+                Id = c.Id,
+                RunnerId = c.Runner.Id,
+                RunnerFirstName = c.Runner.FirstName,
+                RunnerLastName = c.Runner.LastName,
+                RunnerParkrunId = c.Runner.ParkrunID,
+                BaselineTimeMins = c.BaselineTimeMins,
+                BaselineTimeSecs = c.BaselineTimeSecs
+            }).ToList();
+
+            return Ok(competitorDtos);
+        }   
 
         [HttpGet]
         public async Task<ActionResult<List<CompetitorDto>>> GetCompetitors(int tournamentId)

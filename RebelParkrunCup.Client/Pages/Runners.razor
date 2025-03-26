@@ -87,10 +87,12 @@
     private Runner? selectedRunner;
     private Runner? editingRunner;
     private Runner? origRunner;
+    private List<CompetitorDto> competitors = new();
     
     protected override async Task OnInitializedAsync()
     {
         await LoadRunners();
+        competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>("api/competitors/getall") ?? new();
     }
 
     private async Task LoadRunners()
@@ -164,6 +166,13 @@
 
     private async Task ConfirmDelete(int runnerId)
     {
+        // If runner is set up as a competitor, don't allow deletion.
+        if (competitors.Any(c => c.RunnerId == runnerId))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "This runner is set up as a competitor and cannot be deleted.");
+            return;
+        }   
+        
         bool confirmed = await JSRuntime.InvokeAsync<bool>(
             "window.confirm", 
             new object[] { "Are you sure you want to delete this runner?" });

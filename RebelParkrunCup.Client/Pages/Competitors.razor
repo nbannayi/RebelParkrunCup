@@ -86,7 +86,7 @@
     private int origBaselineTimeMins = 0;
     private int origBaselineTimeSecs = 0;
     private string action = "added";
-
+    private List<TieDto> ties = new(); 
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
@@ -106,6 +106,8 @@
 
             await LoadCompetitors(); // Load competitors automatically
         }
+
+        ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament?.Id}") ?? new List<TieDto>();
 
         StateHasChanged();
     }
@@ -192,12 +194,19 @@
         }
     }
 
-    void RemoveCompetitor(int competitorId)
+    private async Task RemoveCompetitor(int competitorId)
     {
         // Find the competitor to remove
         var competitorToRemove = competitors.FirstOrDefault(c => c.Id == competitorId);
         if (competitorToRemove != null)
         {
+            // If competitor is in a tie don't allow them to be removed.
+            if (ties.Any(t =>  t.Competitor1Id == competitorToRemove.Id || t.Competitor2Id == competitorToRemove.Id))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "This competitor is in a tie and cannot be removed.");
+                return;
+            }   
+
             // Restore the runner to available list.
             var runner = allRunners.FirstOrDefault(r => r.Id == competitorToRemove.RunnerId);
             if (runner != null)

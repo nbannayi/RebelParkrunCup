@@ -424,6 +424,24 @@
             return;
         }
 
+        // Ensure neither competitor is already in a tie in the same round.
+        if (ties.Any(t => t.Round == newTie.Round && 
+                          (t.Competitor1Id == newTie.Competitor1Id || t.Competitor1Id == newTie.Competitor2Id ||
+                           t.Competitor2Id == newTie.Competitor1Id || t.Competitor2Id == newTie.Competitor2Id)))
+        {
+            message = " Competitors already in a tie in this round.";
+            return;
+        }   
+
+        // Ensure a competitor isn't being added who has lost in a previous round.
+        if (ties.Any(t => t.Round < newTie.Round && 
+                          (t.Competitor1Id == newTie.Competitor1Id && t.WinningCompetitor == 2) ||
+                          (t.Competitor2Id == newTie.Competitor1Id && t.WinningCompetitor == 1)))
+        {
+            message = " Competitor has already lost in a previous round.";
+            return;
+        }   
+
         var response = await Http.PostAsJsonAsync("api/ties", newTie);
         if (response.IsSuccessStatusCode)
         {
