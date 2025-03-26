@@ -1,0 +1,69 @@
+@page "/bracket"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using RebelParkrunCup.Shared
+
+<PageTitle>Rebel parkrun Cup Manager - Bracket</PageTitle>
+
+<h3>BRACKET: @activeTournament.Name</h3>
+<p>This screen shows a pictoral view of all ties played in the active tournament so far.</p>
+
+@code {    
+    private TournamentDto activeTournament = new TournamentDto();
+
+    // TieTest class definition
+    private class TieTest
+    {
+        public int Id { get; set; }
+        public int Round { get; set; }
+        public string Competitor1 { get; set; }
+        public string Competitor2 { get; set; }
+        public string Winner { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();   
+        activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
+    }
+    
+    // Example Ties Data
+    private List<TieTest> Ties = new()
+    {
+        new TieTest { Id = 1, Round = 1, Competitor1 = "Player A", Competitor2 = "Player B", Winner = "Player A" },
+        new TieTest { Id = 2, Round = 1, Competitor1 = "Player C", Competitor2 = "Player D", Winner = "Player C" },
+        new TieTest { Id = 3, Round = 1, Competitor1 = "Player E", Competitor2 = "Player F", Winner = "Player E" },
+        new TieTest { Id = 4, Round = 1, Competitor1 = "Player G", Competitor2 = "Player H", Winner = "Player G" },
+        new TieTest { Id = 5, Round = 2, Competitor1 = "Player A", Competitor2 = "Player C", Winner = "Player C" },
+        new TieTest { Id = 6, Round = 2, Competitor1 = "Player E", Competitor2 = "Player G", Winner = "Player E" },
+    };
+
+    private int GetXPosition(int round) => 25 + (round-1) * 175; // Space out rounds
+    private int GetYPosition(int index) => 95 + (index-1) * 75; // Space out matches
+}
+
+<div style="width: calc(100vw - 300px); height: calc(100vh - 200px); overflow: auto; border: 1px solid grey;">
+    <svg width="1000" height="1000">
+        <defs>
+            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#F0F0F0; stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#D3D3D3; stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        @for (int i = 0; i < Ties.Count; i++)
+        {
+            var tie = Ties[i];
+            int x = GetXPosition(tie.Round);
+            int y = GetYPosition(i);
+
+            <!-- Box for each match -->
+            <rect x="@x" y="@y" width="150" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
+
+            <!-- Competitor Names -->
+            <svg>
+                <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">@tie.Competitor1</text>
+                <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">@tie.Competitor2</text>
+            </svg>
+        }
+    </svg>
+</div>
