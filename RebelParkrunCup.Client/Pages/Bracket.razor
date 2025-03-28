@@ -10,60 +10,103 @@
 
 @code {    
     private TournamentDto activeTournament = new TournamentDto();
-
-    // TieTest class definition
-    private class TieTest
-    {
-        public int Id { get; set; }
-        public int Round { get; set; }
-        public string Competitor1 { get; set; }
-        public string Competitor2 { get; set; }
-        public string Winner { get; set; }
-    }
+    private List<TieDto> ties = new(); 
+    private List<List<TieDto>> tieRounds = new(); // List of lists of ties for each round.
 
     protected override async Task OnInitializedAsync()
     {
         var tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();   
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
+        ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>(); 
+        tieRounds = GetTieRounds();
     }
     
-    // Example Ties Data
-    private List<TieTest> Ties = new()
+    private int GetXPosition(int round) => 25 + (round-1) * 220; // Space out rounds
+    private int GetYPosition(int index, int round)
     {
-        new TieTest { Id = 1, Round = 1, Competitor1 = "Player A", Competitor2 = "Player B", Winner = "Player A" },
-        new TieTest { Id = 2, Round = 1, Competitor1 = "Player C", Competitor2 = "Player D", Winner = "Player C" },
-        new TieTest { Id = 3, Round = 1, Competitor1 = "Player E", Competitor2 = "Player F", Winner = "Player E" },
-        new TieTest { Id = 4, Round = 1, Competitor1 = "Player G", Competitor2 = "Player H", Winner = "Player G" },
-        new TieTest { Id = 5, Round = 2, Competitor1 = "Player A", Competitor2 = "Player C", Winner = "Player C" },
-        new TieTest { Id = 6, Round = 2, Competitor1 = "Player E", Competitor2 = "Player G", Winner = "Player E" },
-    };
-
-    private int GetXPosition(int round) => 25 + (round-1) * 175; // Space out rounds
-    private int GetYPosition(int index) => 95 + (index-1) * 75; // Space out matches
+        var step = 0;
+        var start = 0;
+        switch (round)
+        {
+            case 1:
+                start = 30; step = 75;
+                break;
+            case 2:
+                start = 60; step = 150;
+                break;
+            case 3:
+                start = 120; step = 300;
+                break;
+            // To review...
+            case 4:
+                start = 240; step = 600;
+                break;
+            case 5:
+                start = 480; step = 1200;
+                break;
+        }        
+        return start + step*index; // Space out matches
+    }
+    
+    // Get list of ties for each round in render order.
+    private List<List<TieDto>> GetTieRounds()
+    {        
+        int maxRound = ties.Max(t => t.Round);       
+        var lastRound = ties.Where(t => t.Round == maxRound).ToList();
+        var tieRoundsNew = new List<List<TieDto>>();
+        tieRoundsNew.Add(lastRound);
+        while (tieRoundsNew.Last().Max(t => t.Round) > 1)
+        {            
+            var tieRoundNew = tieRoundsNew.Last();            
+            var tiePreviousRound = 
+                ties.Where(t => t.Round == tieRoundNew.Max(t => t.Round) - 1).
+                ToList(); 
+            var tiePreviousRoundNew = new List<TieDto>();
+            foreach (var tie in tieRoundNew)
+            {
+                var tiePreviousRound1 = tiePreviousRound.FirstOrDefault(t => 
+                    (t.WinningCompetitor == 1 && t.Competitor1Id == tie.Competitor1Id) ||
+                    (t.WinningCompetitor == 2 && t.Competitor2Id == tie.Competitor1Id));                
+                var tiePreviousRound2 = tiePreviousRound.FirstOrDefault(t => 
+                    (t.WinningCompetitor == 1 && t.Competitor1Id == tie.Competitor2Id) ||
+                    (t.WinningCompetitor == 2 && t.Competitor2Id == tie.Competitor2Id));    
+                if (tiePreviousRound1 != null && tiePreviousRound2 != null)
+                {
+                    tiePreviousRoundNew.Add(tiePreviousRound1);
+                    tiePreviousRoundNew.Add(tiePreviousRound2);
+                }
+            }
+            tieRoundsNew.Add(tiePreviousRoundNew);   
+        }
+        tieRoundsNew.Reverse();
+        foreach (var trn in tieRoundsNew)        
+            foreach (var t in trn)            
+                Console.WriteLine($"Round {t.Round} - {t.Competitor1FullName} vs {t.Competitor2FullName}");        
+        return tieRoundsNew.ToList();
+    }
 }
 
 <div style="width: calc(100vw - 300px); height: calc(100vh - 200px); overflow: auto; border: 1px solid grey;">
-    <svg width="1000" height="1000">
+    <svg width="1000" height="2500">
         <defs>
             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" style="stop-color:#F0F0F0; stop-opacity:1" />
                 <stop offset="100%" style="stop-color:#D3D3D3; stop-opacity:1" />
             </linearGradient>
         </defs>
-        @for (int i = 0; i < Ties.Count; i++)
+        @foreach (var tieRound in tieRounds)
         {
-            var tie = Ties[i];
-            int x = GetXPosition(tie.Round);
-            int y = GetYPosition(i);
-
-            <!-- Box for each match -->
-            <rect x="@x" y="@y" width="150" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
-
-            <!-- Competitor Names -->
-            <svg>
-                <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">@tie.Competitor1</text>
-                <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">@tie.Competitor2</text>
-            </svg>
+            @for (var i = 0; i < tieRound.Count; i++)
+            {
+                var tie = tieRound[i];
+                int x = GetXPosition(tie.Round);
+                int y = GetYPosition(i, tie.Round);
+                <rect x="@x" y="@y" width="175" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
+                <svg>
+                    <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">@tie.Competitor1FullName</text>
+                    <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">@tie.Competitor2FullName</text>
+                </svg>
+            }         
         }
     </svg>
 </div>
