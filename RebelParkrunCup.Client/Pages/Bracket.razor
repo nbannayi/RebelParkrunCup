@@ -6,13 +6,13 @@
 <PageTitle>Rebel parkrun Cup Manager - Bracket</PageTitle>
 
 <h3>BRACKET: @activeTournament.Name</h3>
-<p>This screen shows a pictoral view of all ties played in the active tournament so far.</p>
+<p>This screen shows a pictoral view of all ties played in the active tournament so far. Tip: hover mouse over times to see deltas.</p>
 
 @code {    
     private TournamentDto activeTournament = new TournamentDto();
     private List<TieDto> ties = new(); 
     private List<List<TieDto>> tieRounds = new(); // List of lists of ties for each round.
-
+    
     protected override async Task OnInitializedAsync()
     {
         var tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();   
@@ -21,7 +21,7 @@
         tieRounds = GetTieRounds();
     }
     
-    private int GetXPosition(int round) => 25 + (round-1) * 220; // Space out rounds
+    private int GetXPosition(int round) => 25 + (round-1) * 250; // Space out rounds
     private int GetYPosition(int index, int round)
     {
         var step = 0;
@@ -44,6 +44,9 @@
             case 5:
                 start = 480; step = 1200;
                 break;
+            case 6: 
+                start = 960; step = 2400;
+                break;                  
         }        
         return start + step*index; // Space out matches
     }
@@ -82,12 +85,50 @@
         foreach (var trn in tieRoundsNew)        
             foreach (var t in trn)            
                 Console.WriteLine($"Round {t.Round} - {t.Competitor1FullName} vs {t.Competitor2FullName}");        
-        return tieRoundsNew.ToList();
+        return tieRoundsNew.ToList();                
+    }
+
+    private string GetRoundLabel(List<TieDto> tieRound)
+    {
+        var round = tieRound[0].Round;
+        switch (tieRound.Count)
+        {
+            case 1:
+                return "FINAL";
+            case 2:
+                return "SEMI-FINAL";
+            case 4:
+                return "QUARTER-FINAL";            
+            default:
+                return $"ROUND {round}";
+        }
     }
 }
 
-<div style="width: calc(100vw - 300px); height: calc(100vh - 200px); overflow: auto; border: 1px solid grey;">
-    <svg width="1000" height="2500">
+<!-- SVG for the bracket -->
+<div style="width: calc(100vw - 300px); height: calc(100vh - 185px); overflow: auto; border: 1px solid grey;">
+    <div style="width: 2000px; position: sticky; top: 0; height: 50px; background-color: #F0F0F0; border-bottom: 1px solid grey;">       
+        <svg width="2000" height="50">
+            @foreach (var tieRound in tieRounds)
+            {
+                Console.WriteLine($"Tie round: {tieRound.Count}");
+                var x1 = 25 + 250 * (tieRound[0].Round - 1);
+                var label = GetRoundLabel(tieRound);
+                var x2 = 100 + 250 * (tieRound[0].Round - 1);                
+                
+                // Cosmetic tweaks for final rounds.
+                if (label == "QUARTER-FINAL") x2 -= 25;
+                if (label == "SEMI-FINAL") x2 -= 10;
+                if (label == "FINAL") x2 += 5;
+                
+                <svg>
+                    <rect x="@x1" y="10" width="210" height="30" stroke="grey" fill="lightgreen" stroke-width="black"/>
+                    <text x="@x2" y="30" font-weight="bold" font-size="14" fill="black">@label</text>           
+                </svg>
+            }
+        </svg>
+    </div>
+    <svg width="2000" height="2500">
         <defs>
             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" style="stop-color:#F0F0F0; stop-opacity:1" />
@@ -101,10 +142,24 @@
                 var tie = tieRound[i];
                 int x = GetXPosition(tie.Round);
                 int y = GetYPosition(i, tie.Round);
-                <rect x="@x" y="@y" width="175" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
+                <rect x="@x" y="@y" width="210" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
                 <svg>
-                    <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">@tie.Competitor1FullName</text>
-                    <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">@tie.Competitor2FullName</text>
+                    <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">
+                        <title>△ @tie.Competitor1DeltaTime</title>
+                        <tspan fill="black" font-weight=@(tie.WinningCompetitor == 1 ? "bold" : "normal")>
+                            @tie.Competitor1FullName
+                        </tspan>
+                        @(tie.WinningCompetitor == 1 ? "🏆" : "") 
+                        @tie.Competitor1Time
+                    </text>
+                    <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">                        
+                        <title>△ @tie.Competitor2DeltaTime</title>
+                        <tspan fill="black" font-weight=@(tie.WinningCompetitor == 2 ? "bold" : "normal")>
+                            @tie.Competitor2FullName
+                        </tspan>
+                        @(tie.WinningCompetitor == 2 ? "🏆" : "") 
+                        @tie.Competitor2Time
+                    </text>
                 </svg>
             }         
         }
