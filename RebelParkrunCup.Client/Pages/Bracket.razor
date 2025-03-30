@@ -22,6 +22,32 @@
     }
     
     private int GetXPosition(int round) => 25 + (round-1) * 250; // Space out rounds
+
+    private (int,int) GetLineOffsets(int round)
+    {
+        int dwLineOffset = 25; 
+        int upLineOffset = 25;
+        switch (round)
+        {
+            case 1:
+                dwLineOffset = 50; upLineOffset = 15;
+                break;
+            case 2:
+                dwLineOffset = 80; upLineOffset = 60;
+                break;
+            case 3:
+                dwLineOffset = 140; upLineOffset = 150;
+                break;
+            case 4:
+                dwLineOffset = 260; upLineOffset = 330;
+                break;
+            case 5:
+                dwLineOffset = 500; upLineOffset = 695;
+                break;
+        }
+        return (dwLineOffset, upLineOffset);
+    }
+
     private int GetYPosition(int index, int round)
     {
         var step = 0;
@@ -50,7 +76,7 @@
         }        
         return start + step*index; // Space out matches
     }
-    
+
     // Get list of ties for each round in render order.
     private List<List<TieDto>> GetTieRounds()
     {        
@@ -106,7 +132,7 @@
 }
 
 <!-- SVG for the bracket -->
-<div style="width: calc(100vw - 300px); height: calc(100vh - 185px); overflow: auto; border: 1px solid grey;">
+<div style="width: calc(100vw - 300px); height: calc(100vh - 185px); overflow: auto; border: 1px solid grey; position: relative;">
     <div style="width: 2000px; position: sticky; top: 0; height: 50px; background-color: #F0F0F0; border-bottom: 1px solid grey;">       
         <svg width="2000" height="50">
             @foreach (var tieRound in tieRounds)
@@ -123,12 +149,12 @@
                 
                 <svg>
                     <rect x="@x1" y="10" width="210" height="30" stroke="grey" fill="lightgreen" stroke-width="black"/>
-                    <text x="@x2" y="30" font-weight="bold" font-size="14" fill="black">@label</text>           
+                    <text x="@x2" y="30" font-weight="bold" font-size="14" fill="black">@label</text>   
                 </svg>
             }
         </svg>
     </div>
-    <svg width="2000" height="2500">
+    <svg id="bracket-svg" width="2000" height="2500">    
         <defs>
             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" style="stop-color:#F0F0F0; stop-opacity:1" />
@@ -142,6 +168,8 @@
                 var tie = tieRound[i];
                 int x = GetXPosition(tie.Round);
                 int y = GetYPosition(i, tie.Round);
+                var dwLineOffset = 25;
+                var upLineOffset = 25;
                 <rect x="@x" y="@y" width="210" height="50" stroke="grey" fill="url(#gradient1)" stroke-width="1"></rect>
                 <svg>
                     <text x="@(@x + 10)" y="@(@y + 20)" font-size="14">
@@ -159,9 +187,21 @@
                         </tspan>
                         @(tie.WinningCompetitor == 2 ? "🏆" : "") 
                         @tie.Competitor2Time
-                    </text>
+                    </text>     
+                    @if (tie.Round < tieRounds.Count)
+                    {
+                        (dwLineOffset, upLineOffset) = GetLineOffsets(tie.Round);
+                        if (i % 2 == 0)                    
+                        {
+                            <line x1="@(@x+210)" y1="@(@y+25)" x2="@(@x+250)" y2="@(@y+@dwLineOffset)" stroke="gray" stroke-width="1.5"/>   
+                        }
+                        else
+                        {
+                            <line x1="@(@x+210)" y1="@(@y+25)" x2="@(@x+250)" y2="@(@y-@upLineOffset)" stroke="gray" stroke-width="1.5"/>   
+                        }
+                    }                    
                 </svg>
-            }         
-        }
+            }
+        }        
     </svg>
 </div>

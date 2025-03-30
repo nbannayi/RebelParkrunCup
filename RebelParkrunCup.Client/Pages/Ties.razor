@@ -46,7 +46,7 @@
     <label><b>in round</b></label>
     <InputSelect @bind-Value="newTie.Round">
         <option value="">Select round</option>
-        @for (var n = 1; n <= 7; n++)
+        @for (var n = 1; n <= 6; n++)
         {
             <option>@n</option>
         }
@@ -297,6 +297,7 @@
                                            !(t.Location?.ToLower().Contains("bye") ?? false) &&
                                            !(t.Location?.ToLower().Contains("tbc") ?? false) &&
                                            (t.Date < DateTime.Now && DateTime.Now.Hour >= 10) &&
+                                           (t.WinningCompetitor == 0) &&
                                            (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
     }
 
