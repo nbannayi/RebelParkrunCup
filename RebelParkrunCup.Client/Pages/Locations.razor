@@ -81,9 +81,14 @@
     private Location? selectedLocation;
     private Location? editingLocation;    
     private List<TieDto>? ties;
+    private bool isAdmin;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadLocations();
+        var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
+        isAdmin = value == "true"; 
+
         var tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();   
         var activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
         ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>(); 
@@ -102,7 +107,13 @@
     }
     
     private void EditLocation(Location location)
-    {        
+    {
+        if (!isAdmin)
+        {
+            resultMessage = "Locations can only be edited in Admin mode.";
+            return;
+        }
+
         editingLocation = new Location
         {
             Id = location.Id,
@@ -151,6 +162,12 @@
 
     private async Task ConfirmDelete(int locationId)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Locations can only be deleted in Admin mode.";
+            return;
+        }
+
         // Ensure location doesn't exist in any ties.        
         if (ties != null && ties.Any(t => t.LocationId == locationId))
         {
@@ -195,6 +212,12 @@
     
     private async Task HandleSubmit()
     {                    
+        if (!isAdmin)
+        {
+            resultMessage = "Locations can only be added in Admin mode.";
+            return;
+        }
+
         // Check a first and last name entered.
         if (string.IsNullOrWhiteSpace(newLocation.Name))
         {

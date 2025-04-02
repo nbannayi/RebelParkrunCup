@@ -18,7 +18,7 @@
         var tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();   
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
         ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament.Id}") ?? new List<TieDto>(); 
-        tieRounds = GetTieRounds();
+        if (ties.Count > 0) tieRounds = GetTieRounds();
     }
     
     private int GetXPosition(int round) => 25 + (round-1) * 250; // Space out rounds

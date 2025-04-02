@@ -33,27 +33,10 @@ public class AdminAuthController : ControllerBase
         if (BCrypt.Net.BCrypt.Verify(request.Password, storedPasswordHash))
         {
             // If the password is correct, set the admin state in the session
-            HttpContext.Session.SetString("IsAdmin", "true");
             return Ok(new { Message = "Admin mode activated." });
         }
 
         return Unauthorized(new { Message = "Incorrect password." });
-    }
-
-    // Endpoint to log out of admin mode
-    [HttpPost("logout-admin")]
-    public IActionResult LogoutAdmin()
-    {
-        HttpContext.Session.Remove("IsAdmin"); // Remove admin state from session
-        return Ok();
-    }
-
-    // Endpoint to check if the user is in admin mode
-    [HttpGet("is-admin")]
-    public IActionResult IsAdmin()
-    {
-        bool isAdmin = HttpContext.Session.GetString("IsAdmin") == "true";
-        return isAdmin ? Ok() : Unauthorized();
     }
 }
 

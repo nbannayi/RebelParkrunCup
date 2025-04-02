@@ -62,7 +62,7 @@
     </label> 
 
     <!-- Submit Button -->
-    <button type="submit">Add tie</button>    
+    <button type="submit">Add Tie</button>    
 </EditForm>
 
 <button @onclick="FetchParkrunResults" @attributes="@(canUpdateResults ? new Dictionary<string, object> { ["disabled"] = "disabled" } : null)">Get Results</button>
@@ -206,18 +206,14 @@
     private List<CompetitorDto> competitors = new();
     private List<Location> locations = new();
     private string? message;
-
     private List<TournamentDto> tournaments = new();
-
     private TournamentDto activeTournament = new();
-
     private List<TieDto> ties = new(); 
-
     private bool canUpdateResults = false;
-
     private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
         = new Dictionary<(string, string, string), string>();
-
+    private bool isAdmin;
+    
     private async Task FetchParkrunResultsApi(List<TieDto> updateableTies)
     {
         resultsDict.Clear();
@@ -266,6 +262,9 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
+        var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
+        isAdmin = value == "true"; 
+        Console.WriteLine($"Ties admin: {isAdmin}");
 
         // Find the active tournament
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
@@ -296,13 +295,19 @@
                                            !t.Competitor2FullName.ToLower().Contains("bye") &&
                                            !(t.Location?.ToLower().Contains("bye") ?? false) &&
                                            !(t.Location?.ToLower().Contains("tbc") ?? false) &&
-                                           (t.Date < DateTime.Now && DateTime.Now.Hour >= 10) &&
+                                           (t.Date < DateTime.Now && (DateTime.Now.Hour >= 10 || (DateTime.Now - t.Date).TotalDays >= 1)) &&
                                            (t.WinningCompetitor == 0) &&
                                            (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
     }
 
     private async Task ConfirmDelete(int tieId)
     {
+        if (!isAdmin)
+        {
+            message = " Ties can only be deleted in Admin mode.";
+            return;            
+        }
+
         bool confirmed = await JSRuntime.InvokeAsync<bool>(
             "window.confirm", 
             new object[] { "Are you sure you want to delete this tie?" });
@@ -320,7 +325,13 @@
     }
 
     private void EditTie(TieDto tie)
-    {        
+    {
+        if (!isAdmin)
+        {
+            message = " Ties can only be edited in Admin mode.";
+            return;            
+        }
+
         Console.WriteLine($"Editing Tie - LocationId: {tie.LocationId}");  // Debugging
         editingTie = new TieDto
         {
@@ -407,6 +418,12 @@
 
     private async Task SaveTie(EditContext editContext)
     {
+        if (!isAdmin)
+        {
+            message = " Ties can only be added in Admin mode.";
+            return;            
+        }
+
         if (newTie.Competitor1Id == 0 || newTie.Competitor2Id == 0 || newTie.Round == 0 || newTie.LocationId == 0)
         {
             message = " Both competitors, round and location must be selected (use TBC if location not yet confirmed).";
@@ -504,6 +521,12 @@
 
     private async Task FetchParkrunResults()
     {
+        if (!isAdmin)
+        {
+            message = " Results can only be fetched in Admin mode.";
+            return;            
+        }
+
         var updateableTies = GetUpdateableResults();
         message = $" Retrieving results for {updateableTies.Count} ties...";
 

@@ -88,10 +88,13 @@
     private Runner? editingRunner;
     private Runner? origRunner;
     private List<CompetitorDto> competitors = new();
+    private bool isAdmin;
     
     protected override async Task OnInitializedAsync()
     {
         await LoadRunners();
+        var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
+        isAdmin = value == "true"; 
         competitors = await Http.GetFromJsonAsync<List<CompetitorDto>>("api/competitors/getall") ?? new();
     }
 
@@ -109,6 +112,12 @@
 
     private void EditRunner(Runner runner)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Runners can only be edited in Admin mode.";
+            return;
+        }
+
         origRunner = runners.FirstOrDefault(r => r.Id == runner.Id);
 
         editingRunner = new Runner
@@ -166,6 +175,12 @@
 
     private async Task ConfirmDelete(int runnerId)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Runners can only be deleted in Admin mode.";
+            return;
+        }
+
         // If runner is set up as a competitor, don't allow deletion.
         if (competitors.Any(c => c.RunnerId == runnerId))
         {
@@ -209,7 +224,13 @@
     private ElementReference firstNameInput;
     
     private async Task HandleSubmit()
-    {                    
+    {
+        if (!isAdmin)
+        {
+            resultMessage = "Runners can only be added in Admin mode.";
+            return;
+        }
+
         // Check a first and last name entered.
         if (string.IsNullOrWhiteSpace(newRunner.FirstName) || string.IsNullOrWhiteSpace(newRunner.LastName) ||
             string.IsNullOrWhiteSpace(newRunner.ParkrunID))

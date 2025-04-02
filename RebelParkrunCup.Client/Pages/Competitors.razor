@@ -87,10 +87,13 @@
     private int origBaselineTimeSecs = 0;
     private string action = "added";
     private List<TieDto> ties = new(); 
+    private bool isAdmin;
     
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
+        var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
+        isAdmin = value == "true"; 
 
         // Find the active tournament
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
@@ -151,10 +154,17 @@
         }        
     }
 
-    void AddRunners()
-    {
+    private async Task AddRunners()
+    {        
         if (selectedRunnerIds.Any())
         {
+            if (!isAdmin)
+            {
+                var resultMessage = "Runners can only be made Competitors in Admin mode.";
+                await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+                return;
+            }
+
             // Get the selected runners from available list
             var selectedRunners = availableRunners
                 .Where(r => selectedRunnerIds.Contains(r.Id))
@@ -197,6 +207,13 @@
 
     private async Task RemoveCompetitor(int competitorId)
     {
+        if (!isAdmin)
+        {
+            var resultMessage = "Competitors can only be deleted in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+            return;
+        }
+
         // Find the competitor to remove
         var competitorToRemove = competitors.FirstOrDefault(c => c.Id == competitorId);
         if (competitorToRemove != null)
@@ -226,6 +243,13 @@
 
     private async Task SaveCompetitors()
     {
+        if (!isAdmin)
+        {
+            var resultMessage = "Competitors can only be saved in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+            return;
+        }
+
         var competitorEntities = competitors.Select(c => new Competitor
             {                
                 Id = c.Id,
@@ -302,13 +326,21 @@
 
     private CompetitorDto? editingCompetitor;
 
-    void EditBaseline(CompetitorDto competitor)
+    private async Task EditBaseline(CompetitorDto competitor)
     {
+        if (!isAdmin)
+        {
+            var resultMessage = "Competitors can only be edited in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+            return;
+        }
+
         origBaselineTimeMins = competitor.BaselineTimeMins;
         origBaselineTimeSecs = competitor.BaselineTimeSecs;
 
         editingCompetitor = competitor;
     }
+
     async Task UpdateBaseline()
     {
         if (editingCompetitor != null && (editingCompetitor.BaselineTimeMins < 0 || editingCompetitor.BaselineTimeMins > 59))

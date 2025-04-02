@@ -105,16 +105,26 @@
     private Tournament? selectedTournament;
     private Tournament? editingTournament;
     private Tournament? origTournament;
+    private bool isAdmin;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadTournaments();
+        var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
+        isAdmin = value == "true"; 
+
         newTournament.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
         newTournament.EndDate = new DateTime(DateTime.Now.Year, 7, 31);
     }
 
     private async Task MakeActive(Tournament tournament)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Tournaments can only be made active in Admin mode.";
+            return;
+        }
+
         foreach (var t in tournaments)
         {
             t.Active = (t == tournament); // Set true only for the clicked one, false for others
@@ -136,8 +146,13 @@
 
     private void EditTournament(Tournament tournament)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Tournaments can only be edited in Admin mode.";
+            return;
+        }
+ 
         origTournament = tournament;
-
         editingTournament = new Tournament
         {
             Id = tournament.Id,
@@ -193,6 +208,12 @@
 
     private async Task ConfirmDelete(int tournamentId)
     {
+        if (!isAdmin)
+        {
+            resultMessage = "Tournaments can only be deleted in Admin mode.";
+            return;
+        }
+
         // Don't allow a tournament to be deleted if it has competitors.
         var competitors = (await Http.GetFromJsonAsync<List<CompetitorDto>>(
             $"api/competitors?tournamentId={tournamentId}") ?? 
@@ -240,6 +261,12 @@
     
     private async Task HandleSubmit()
     {                    
+        if (!isAdmin)
+        {
+            resultMessage = "Tournaments can only be added in Admin mode.";
+            return;
+        }
+        
         // Check a first and last name entered.
         if (string.IsNullOrWhiteSpace(newTournament.Name))
         {
