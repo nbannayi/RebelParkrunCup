@@ -1,7 +1,7 @@
     public class ParkrunResult
     {
         public string RunnerId { get; set; }
-        public List<Result> Results { get; set; }
+        public List<Result> Results { get; set; } = new();
     }
     
     public class Result
