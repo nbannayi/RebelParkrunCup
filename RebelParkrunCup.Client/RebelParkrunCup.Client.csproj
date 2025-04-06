@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateWebConfig>false</GenerateWebConfig>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +14,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../RebelParkrunCup.Shared/RebelParkrunCup.Shared.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
+    <ExcludeApp_Data>true</ExcludeApp_Data>
+  </PropertyGroup>
 
 </Project>

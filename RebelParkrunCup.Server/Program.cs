@@ -37,9 +37,15 @@ var app = builder.Build();
 // Use the CORS policy
 app.UseCors("AllowAllOrigins");
 
+// This is crucial for serving Blazor WebAssembly (Client) files
+app.UseBlazorFrameworkFiles(); // Serve Blazor WebAssembly files
+app.UseStaticFiles(); // Serve other static files (like images, CSS)
+app.MapFallbackToFile("index.html"); // Fallback to index.html when routing doesn't match
+
 // Configure the HTTP request pipeline.
 app.UseSession();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+

@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RebelParkrunCup.Client\RebelParkrunCup.Client.csproj" />
     <ProjectReference Include="..\RebelParkrunCup.Shared\RebelParkrunCup.Shared.csproj" />
   </ItemGroup>
 
