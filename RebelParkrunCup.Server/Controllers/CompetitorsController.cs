@@ -17,7 +17,7 @@ namespace RebelParkrunCup.Server.Controllers
         }
 
         [HttpPost("saveall")]
-        public async Task<IActionResult> SaveAllCompetitors([FromBody] List<Competitor> competitors)
+        public async Task<IActionResult> SaveAllCompetitors([FromBody] List<Competitor> competitors, [FromQuery] int tournamentId)
         {
             if (competitors == null)
             {
@@ -25,11 +25,13 @@ namespace RebelParkrunCup.Server.Controllers
             }
 
             try
-            {
+            {                
                 if (competitors.Count == 0)
                 {
                     // If no competitors are provided, delete all existing competitors
-                    var allCompetitors = await _context.Competitors.ToListAsync();
+                    var allCompetitors = await _context.Competitors.
+                        Where(c => c.TournamentId == tournamentId).
+                        ToListAsync();
                     _context.Competitors.RemoveRange(allCompetitors);
                     await _context.SaveChangesAsync();
                     return Ok("All competitors deleted.");
@@ -37,8 +39,7 @@ namespace RebelParkrunCup.Server.Controllers
 
                 // Get existing competitors for the same tournament
                 if (competitors.Count > 0)
-                {
-                    int tournamentId = competitors.First().TournamentId;
+                {                    
                     var existingCompetitors = await _context.Competitors
                         .Where(c => c.TournamentId == tournamentId)
                         .ToListAsync();

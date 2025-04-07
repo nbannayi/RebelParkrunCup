@@ -2,6 +2,12 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+@media (max-width: 800px) {
+    .hide-on-mobile {
+        display: none !important; /* Hide on mobile devices */
+    }
+}
+
 h1:focus {
     outline: none;
 }
@@ -188,3 +194,4 @@ code {
 .time-separator {
     font-weight: bold;
     font-size: 1.2em; /* Make the colon slightly larger */
+}

@@ -88,6 +88,7 @@
     private string action = "added";
     private List<TieDto> ties = new(); 
     private bool isAdmin;
+    private int otherCompetitorsMaxId = 0;
     
     protected override async Task OnInitializedAsync()
     {
@@ -112,6 +113,20 @@
         }
 
         ties = await Http.GetFromJsonAsync<List<TieDto>>($"api/ties?tournamentId={activeTournament?.Id}") ?? new List<TieDto>();
+
+        // Get max id of other competitors.        
+        foreach (var tournament in tournaments)
+        {
+            if (!tournament.Active)
+            {
+                var otherCompetitors = 
+                    (await Http.GetFromJsonAsync<List<CompetitorDto>>($"api/competitors?tournamentId={tournament.Id}") 
+                    ?? new List<CompetitorDto>());
+                var competitorsMaxId = otherCompetitors.Any() ? otherCompetitors.Max(c => c.Id) : 0;            
+                if (competitorsMaxId > otherCompetitorsMaxId)                    
+                    otherCompetitorsMaxId = competitorsMaxId;                                
+            }
+        }
 
         StateHasChanged();
     }
@@ -175,7 +190,8 @@
             {
                 competitors.Add(new CompetitorDto
                 {
-                    Id = competitors.Count + 1, // Simulate a new ID
+                    // Add other to id 
+                    Id = otherCompetitorsMaxId + competitors.Count + 1, // Simulate a new ID
                     RunnerId = runner.Id,
                     RunnerFirstName = runner.FirstName,
                     RunnerLastName = runner.LastName,
@@ -263,7 +279,7 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("api/competitors/saveall", competitorEntities);
+            var response = await Http.PostAsJsonAsync($"api/competitors/saveall/?tournamentId={activeTournament?.Id}", competitorEntities);
             
             if (response.IsSuccessStatusCode)
             {
