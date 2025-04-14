@@ -145,8 +145,7 @@
     private async Task LoadTournaments()
     {
         // Fetch tournaments from API
-        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
-        Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
+        tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();
     }
 
     private async Task LoadCompetitors()
@@ -170,16 +169,23 @@
     }
 
     private async Task AddRunners()
-    {        
+    {    
+        if (!isAdmin)
+        {
+            var resultMessage = "Runners can only be made Competitors in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+            return;
+        }
+
+        if (!selectedRunnerIds.Any())
+        {
+            var resultMessage = "No runners have been selected to add as Competitors.";
+            await JSRuntime.InvokeVoidAsync("alert", resultMessage);
+            return;
+        }
+
         if (selectedRunnerIds.Any())
         {
-            if (!isAdmin)
-            {
-                var resultMessage = "Runners can only be made Competitors in Admin mode.";
-                await JSRuntime.InvokeVoidAsync("alert", resultMessage);
-                return;
-            }
-
             // Get the selected runners from available list
             var selectedRunners = availableRunners
                 .Where(r => selectedRunnerIds.Contains(r.Id))
@@ -283,17 +289,11 @@
             
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Competitors saved successfully!");
                 action = "saved";
-            }
-            else
-            {
-                Console.WriteLine("Error saving competitors.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
         }  
 
         StateHasChanged();  

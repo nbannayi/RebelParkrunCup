@@ -121,8 +121,9 @@
     {
         if (!isAdmin)
         {
-            resultMessage = "Tournaments can only be made active in Admin mode.";
-            return;
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Tournaments can only be made active in Admin mode.");
+            return;    
         }
 
         foreach (var t in tournaments)
@@ -144,11 +145,12 @@
         selectedTournament = tournament;
     }
 
-    private void EditTournament(Tournament tournament)
+    private async Task EditTournament(Tournament tournament)
     {
         if (!isAdmin)
         {
-            resultMessage = "Tournaments can only be edited in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Tournaments can only be edited in Admin mode.");
             return;
         }
  
@@ -210,7 +212,8 @@
     {
         if (!isAdmin)
         {
-            resultMessage = "Tournaments can only be deleted in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Tournaments can only be deleted in Admin mode.");
             return;
         }
 
@@ -263,7 +266,8 @@
     {                    
         if (!isAdmin)
         {
-            resultMessage = "Tournaments can only be added in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Tournaments can only be added in Admin mode.");
             return;
         }
         

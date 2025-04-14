@@ -107,10 +107,7 @@
             }
             tieRoundsNew.Add(tiePreviousRoundNew);   
         }
-        tieRoundsNew.Reverse();
-        foreach (var trn in tieRoundsNew)        
-            foreach (var t in trn)            
-                Console.WriteLine($"Round {t.Round} - {t.Competitor1FullName} vs {t.Competitor2FullName}");        
+        tieRoundsNew.Reverse(); 
         return tieRoundsNew.ToList();                
     }
 
@@ -137,7 +134,6 @@
         <svg width="2000" height="50">
             @foreach (var tieRound in tieRounds)
             {
-                Console.WriteLine($"Tie round: {tieRound.Count}");
                 var x1 = 25 + 250 * (tieRound[0].Round - 1);
                 var label = GetRoundLabel(tieRound);
                 var x2 = 100 + 250 * (tieRound[0].Round - 1);                
@@ -178,7 +174,7 @@
                             @tie.Competitor1FullName
                         </tspan>
                         @(tie.WinningCompetitor == 1 ? "🏆" : "") 
-                        @tie.Competitor1Time
+                        @(tie.WinningCompetitor != 0 ? @tie.Competitor1Time : "")
                     </text>
                     <text x="@(@x + 10)" y="@(@y + 40)" font-size="14">                        
                         <title>△ @tie.Competitor2DeltaTime</title>
@@ -186,7 +182,7 @@
                             @tie.Competitor2FullName
                         </tspan>
                         @(tie.WinningCompetitor == 2 ? "🏆" : "") 
-                        @tie.Competitor2Time
+                        @(tie.WinningCompetitor != 0 ? @tie.Competitor2Time : "")                        
                     </text>     
                     @if (tie.Round < tieRounds.Count)
                     {

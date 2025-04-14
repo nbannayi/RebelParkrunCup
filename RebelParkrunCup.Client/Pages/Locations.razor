@@ -106,11 +106,12 @@
         selectedLocation = location;
     }
     
-    private void EditLocation(Location location)
+    private async Task EditLocation(Location location)
     {
         if (!isAdmin)
         {
-            resultMessage = "Locations can only be edited in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Locations can only be edited in Admin mode.");
             return;
         }
 
@@ -164,7 +165,8 @@
     {
         if (!isAdmin)
         {
-            resultMessage = "Locations can only be deleted in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Locations can only be deleted in Admin mode.");
             return;
         }
 
@@ -214,7 +216,8 @@
     {                    
         if (!isAdmin)
         {
-            resultMessage = "Locations can only be added in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Locations can only be added in Admin mode.");
             return;
         }
 

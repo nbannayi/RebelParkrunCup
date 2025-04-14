@@ -210,8 +210,8 @@
     private TournamentDto activeTournament = new();
     private List<TieDto> ties = new(); 
     private bool canUpdateResults = false;
-    private Dictionary<(string RunnerId, string Event, string RunDate), string> resultsDict 
-        = new Dictionary<(string, string, string), string>();
+    private Dictionary<(string? RunnerId, string? Event, string? RunDate), string?> resultsDict 
+        = new Dictionary<(string?, string?, string?), string?>();
     private bool isAdmin;
     
     private async Task FetchParkrunResultsApi(List<TieDto> updateableTies)
@@ -244,8 +244,7 @@
 
             if (response != null)
             {
-                resultsDict = response
-                    .SelectMany(r => r.Results)
+                resultsDict = response.SelectMany(r => r.Results ?? Enumerable.Empty<Result>())
                     .ToDictionary(
                         r => (r.RunnerId, r.Event, r.RunDate),  // Key
                         r => r.Time                             // Value
@@ -254,7 +253,6 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching data: {ex.Message}");
             message = " Error fetching data.";
         }
     }
@@ -264,7 +262,6 @@
         await LoadTournaments();
         var value = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isAdminMode");        
         isAdmin = value == "true"; 
-        Console.WriteLine($"Ties admin: {isAdmin}");
 
         // Find the active tournament
         activeTournament = tournaments.FirstOrDefault(t => t.Active) ?? new TournamentDto();
@@ -285,7 +282,6 @@
     {
         // Fetch tournaments from API
         tournaments = await Http.GetFromJsonAsync<List<TournamentDto>>("api/tournaments") ?? new List<TournamentDto>();        
-        Console.WriteLine($"Fetched {tournaments?.Count} tournaments"); 
     }
 
     private List<TieDto> GetUpdateableResults()
@@ -304,8 +300,9 @@
     {
         if (!isAdmin)
         {
-            message = " Ties can only be deleted in Admin mode.";
-            return;            
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Ties can only be deleted in Admin mode.");
+            return;      
         }
 
         bool confirmed = await JSRuntime.InvokeAsync<bool>(
@@ -324,15 +321,15 @@
         //StateHasChanged();
     }
 
-    private void EditTie(TieDto tie)
+    private async Task EditTie(TieDto tie)
     {
         if (!isAdmin)
         {
-            message = " Ties can only be edited in Admin mode.";
-            return;            
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Ties can only be edited in Admin mode.");
+            return;      
         }
 
-        Console.WriteLine($"Editing Tie - LocationId: {tie.LocationId}");  // Debugging
         editingTie = new TieDto
         {
             Id = tie.Id,
@@ -420,7 +417,8 @@
     {
         if (!isAdmin)
         {
-            message = " Ties can only be added in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Ties can only be added in Admin mode.");
             return;            
         }
 
@@ -484,9 +482,7 @@
     }
 
     private void UpdateDate()
-    {
-        Console.WriteLine($"UpdateDate: {isChecked}");
-        
+    {   
         if (isChecked)
             newTie.Date = new DateTime(1, 1, 1); // Some default value
         else
@@ -523,8 +519,9 @@
     {
         if (!isAdmin)
         {
-            message = " Results can only be fetched in Admin mode.";
-            return;            
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Results can only be fetched in Admin mode.");
+            return;      
         }
 
         var updateableTies = GetUpdateableResults();
@@ -532,19 +529,29 @@
 
         await FetchParkrunResultsApi(updateableTies);
 
-        foreach (var tie in ties)
+        foreach (var tie in updateableTies)
         {
             var competitor1 = competitors.FirstOrDefault(c => c.Id == tie.Competitor1Id);
             var competitor2 = competitors.FirstOrDefault(c => c.Id == tie.Competitor2Id);
 
             if (competitor1 != null && tie.Location != null && resultsDict.TryGetValue((competitor1.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out var time))
             {
-                Console.WriteLine($"Competitor1: {competitor1.RunnerFirstName} {competitor1.RunnerLastName}");  
-                Console.WriteLine($"Time: {time}"); 
+                if (string.IsNullOrWhiteSpace(time) || !time.Contains(":"))
+                {
+                    message = " Invalid time format.";
+                    return;
+                }
 
-                var timeTokens = time.Split(':').Select(int.Parse).ToArray();            
-                tie.Competitor1ResultMins = timeTokens[0];
-                tie.Competitor1ResultSecs = timeTokens[1];
+                var timeTokens = time.Split(':');
+                if (timeTokens.Length != 2 || !int.TryParse(timeTokens[0], out _) || !int.TryParse(timeTokens[1], out _))
+                {
+                    message = " Invalid time format.";
+                    return;
+                }
+
+                var timeTokens2 = timeTokens.Select(int.Parse).ToArray();            
+                tie.Competitor1ResultMins = timeTokens2[0];
+                tie.Competitor1ResultSecs = timeTokens2[1];
                 tie.Competitor1Delta = 60*competitor1.BaselineTimeMins + competitor1.BaselineTimeSecs - 
                                        60*tie.Competitor1ResultMins - tie.Competitor1ResultSecs;
             }
@@ -552,12 +559,22 @@
             if (competitor2 != null && tie.Location != null && 
                 resultsDict.TryGetValue((competitor2.RunnerParkrunId, tie.Location, tie.Date.ToString("dd/MM/yyyy")), out time))
             {
-                Console.WriteLine($"Competitor2: {competitor2.RunnerFirstName} {competitor2.RunnerLastName}");  
-                Console.WriteLine($"Time: {time}"); 
+                if (string.IsNullOrWhiteSpace(time))
+                {
+                    message = " Invalid time format.";
+                    return;
+                }
 
-                var timeTokens = time.Split(':').Select(int.Parse).ToArray();            
-                tie.Competitor2ResultMins = timeTokens[0];
-                tie.Competitor2ResultSecs = timeTokens[1];
+                var timeTokens = time.Split(':');
+                if (timeTokens.Length != 2)
+                {
+                    message = " Invalid time format.";
+                    return;
+                }
+                var timeTokens2 = timeTokens.Select(int.Parse).ToArray();
+
+                tie.Competitor2ResultMins = timeTokens2[0];
+                tie.Competitor2ResultSecs = timeTokens2[1];
                 tie.Competitor2Delta = 60*competitor2.BaselineTimeMins + competitor2.BaselineTimeSecs - 
                                        60*tie.Competitor2ResultMins - tie.Competitor2ResultSecs;
             }
@@ -579,7 +596,7 @@
                     tie.WinningCompetitor = 0;
             }      
 
-            EditTie(tie);
+            await EditTie(tie);
             await UpdateTie();
         }
 

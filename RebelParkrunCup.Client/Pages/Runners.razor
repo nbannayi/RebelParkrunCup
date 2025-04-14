@@ -110,11 +110,12 @@
         selectedRunner = runner;
     }
 
-    private void EditRunner(Runner runner)
+    private async Task EditRunner(Runner runner)
     {
         if (!isAdmin)
         {
-            resultMessage = "Runners can only be edited in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Runners can only be edited in Admin mode.");
             return;
         }
 
@@ -177,7 +178,8 @@
     {
         if (!isAdmin)
         {
-            resultMessage = "Runners can only be deleted in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Runners can only be deleted in Admin mode.");
             return;
         }
 
@@ -227,7 +229,8 @@
     {
         if (!isAdmin)
         {
-            resultMessage = "Runners can only be added in Admin mode.";
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Runners can only be added in Admin mode.");
             return;
         }
 

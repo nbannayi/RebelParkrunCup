@@ -8,6 +8,10 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+if (string.IsNullOrEmpty(apiBaseUrl))
+{
+    throw new InvalidOperationException("ApiBaseUrl is not configured.");
+}
 
 builder.Services.AddScoped(sp => new HttpClient
 {
