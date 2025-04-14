@@ -251,7 +251,7 @@
                     );
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             message = " Error fetching data.";
         }
@@ -601,7 +601,11 @@
         }
 
         editingTie = null;
+
+        // Reset button enablement.
+        canUpdateResults = !GetUpdateableResults().Any();        
         StateHasChanged();
+
         message = " Results updated.";
     }
 }
