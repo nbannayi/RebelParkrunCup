@@ -292,8 +292,7 @@
                                            !(t.Location?.ToLower().Contains("bye") ?? false) &&
                                            !(t.Location?.ToLower().Contains("tbc") ?? false) &&
                                            (t.Date < DateTime.Now && (DateTime.Now.Hour >= 10 || (DateTime.Now - t.Date).TotalDays >= 1)) &&
-                                           (t.WinningCompetitor == 0) &&
-                                           (t.Competitor1ResultMins == 0 || t.Competitor2ResultMins == 0)).ToList();
+                                           (t.WinningCompetitor == 0)).ToList();
     }
 
     private async Task ConfirmDelete(int tieId)
@@ -405,7 +404,10 @@
         await Http.PutAsJsonAsync($"api/ties/{editingTie.Id}", tieToUpdate);                        
 
         editingTie = null; // Exit edit mode
-        StateHasChanged();
+
+        // Reset button enablement.
+        canUpdateResults = !GetUpdateableResults().Any();        
+        StateHasChanged();        
     }
 
     private void SelectTie(TieDto tie)
@@ -525,7 +527,7 @@
         }
 
         var updateableTies = GetUpdateableResults();
-        message = $" Retrieving results for {updateableTies.Count} ties...";
+        message = $" Retrieving results for {updateableTies.Count} tie(s)...";
 
         await FetchParkrunResultsApi(updateableTies);
 
