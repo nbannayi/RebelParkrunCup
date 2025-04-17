@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RebelParkrunCup.Server.Data;
 using RebelParkrunCup.Shared;
 using Microsoft.AspNetCore.Session;
+using RebelParkrunCup.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddHttpClient(); 
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSingleton<GcsUploader>();
+builder.Services.AddHostedService<GcsUploadOnShutdown>();
 
 // Add SQLite database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

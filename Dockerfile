@@ -15,14 +15,22 @@ RUN dotnet publish RebelParkrunCup.Server/RebelParkrunCup.Server.csproj -c Relea
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Expose port 8080 for Cloud Run
-EXPOSE 8080
+# Install Google Cloud SDK (includes gsutil)
+RUN apt-get update && apt-get install -y curl gnupg \
+  && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
+  | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+  | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
+  && apt-get update && apt-get install -y google-cloud-sdk
 
-# Copy published output from build stage
+# Copy in startup script
+COPY startup.sh /startup.sh
+RUN chmod +x /startup.sh
+
+# Copy your build output (from previous stage)
 COPY --from=build /app/publish .
 
-# Copy the database file
-COPY RebelParkrunCup.Server/parkrun.db /app/parkrun.db
+EXPOSE 8080
 
 # Run the app
-ENTRYPOINT ["dotnet", "RebelParkrunCup.Server.dll"]
+ENTRYPOINT ["/startup.sh"]

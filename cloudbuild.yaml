@@ -22,6 +22,7 @@ steps:
         '--platform',
         'managed',
         '--allow-unauthenticated',
+        '--execution-environment=gen2',
         '--port',
         '8080'
       ]
